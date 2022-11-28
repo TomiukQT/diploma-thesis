@@ -11,7 +11,7 @@ jobs:
         with:
           root_file: doc/ctufit-thesis.tex
         env:
-          TEXINPUTS: .;doc/;F:\texlive\2022\bin\win32
+          TEXINPUTS: .;doc/;F:\texlive\2022
         
       - name: Upload PDF file
         uses: actions/upload-artifact@v3
