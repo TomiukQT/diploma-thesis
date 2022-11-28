@@ -12,6 +12,7 @@ jobs:
           root_file: doc/ctufit-thesis.tex
         env:
           TEXINPUTS: .;doc/
+        latexmk_use_xelatex: true
       - name: Upload PDF file
         uses: actions/upload-artifact@v3
         with:
