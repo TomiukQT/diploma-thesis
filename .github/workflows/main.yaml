@@ -10,9 +10,8 @@ jobs:
         uses: xu-cheng/latex-action@v2
         with:
           root_file: doc/ctufit-thesis.tex
-          latexmk_use_xelatex: true
         env:
-          TEXINPUTS: .;doc/
+          TEXINPUTS: .;doc/;$PATH
         
       - name: Upload PDF file
         uses: actions/upload-artifact@v3
