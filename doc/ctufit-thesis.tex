@@ -29,24 +29,24 @@
 % language: czech/english/slovak
 % thesis type: bachelor/master/dissertation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\documentclass[czech,bachelor,unicode]{ctufit-thesis}
+\documentclass[czech,master,unicode]{ctufit-thesis}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % FILL IN THIS INFORMATION
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\ctufittitle{Název příkladné závěrečné práce} % replace with the title of your thesis
-\ctufitauthorfull{Bc. Jiří Nebozíz} % replace with your full name (first name(s) and then family name(s) / surname(s)) including academic degrees
-\ctufitauthorsurnames{Nebozíz} % replace with your surname(s) / family name(s)
-\ctufitauthorgivennames{Jiří} % replace with your first name(s) / given name(s)
-\ctufitsupervisor{doc.\,Ing.\,Damien Zlo,\,Ph.D.} % replace with name of your supervisor/advisor (include academic degrees)
-\ctufitdepartment{Katedra teoretické informatiky} % replace with the department of your defence
-\ctufityear{2021} % replace with the year of your defence
+\ctufittitle{Analýza nálady v komunikačních aplikacích} % replace with the title of your thesis
+\ctufitauthorfull{Bc. Tomáš Valenta} % replace with your full name (first name(s) and then family name(s) / surname(s)) including academic degrees
+\ctufitauthorsurnames{Valenta} % replace with your surname(s) / family name(s)
+\ctufitauthorgivennames{Tomáš} % replace with your first name(s) / given name(s)
+\ctufitsupervisor{Ing. Pavel Švagr} % replace with name of your supervisor/advisor (include academic degrees)
+\ctufitdepartment{Katedra aplikované matematiky} % replace with the department of your defence
+\ctufityear{2023} % replace with the year of your defence
 \ctufitdeclarationplace{Praze} % replace with the place where you sign the declaration
 \ctufitdeclarationdate{\today} % replace with the date of signature of the declaration
-\ctufitabstractCZE{Fill in abstract of this thesis in Czech language. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Cras pede libero, dapibus nec, pretium sit amet, tempor quis. Sed vel lectus. Donec odio tempus molestie, porttitor ut, iaculis quis, sem. Suspendisse sagittis ultrices augue.}
-\ctufitabstractENG{Fill in abstract of this thesis in English language. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Cras pede libero, dapibus nec, pretium sit amet, tempor quis. Sed vel lectus. Donec odio tempus molestie, porttitor ut, iaculis quis, sem. Suspendisse sagittis ultrices augue.}
-\ctufitkeywordsCZE{enter, commma, separated, list, of, keywords, in, CZECH}
-\ctufitkeywordsENG{enter, commma, separated, list, of, keywords, in, ENGLISH}
+\ctufitabstractCZE{TODO CZE abstract.}
+\ctufitabstractENG{TODO ENG abstract.}
+\ctufitkeywordsCZE{TODO, list, of, keywords, in, CZECH}
+\ctufitkeywordsENG{TODO, list, of, keywords, in, ENGLISH}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % END FILL IN
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -116,7 +116,7 @@
 \begin{document} 
 \frontmatter\frontmatterinit % do not remove these two commands
 
-\includepdf{assignment-include.pdf} % replace that file with your thesis assignment provided by study office
+\includepdf{valent13-assignment.pdf} % replace that file with your thesis assignment provided by study office
 
 \thispagestyle{empty}\cleardoublepage\maketitle % do not remove these three commands
 
@@ -144,7 +144,7 @@
 % This is a place to thank people for helping you. It is common to thank your supervisor.
 %%%%%%%%%%%%%%%%%%%
 \begin{acknowledgmentpage}
-	Chtěl bych poděkovat především sit amet, consectetuer adipiscing elit. Curabitur sagittis hendrerit ante. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Cras pede libero, dapibus nec, pretium sit amet, tempor quis. Sed vel lectus. Donec odio tempus molestie, porttitor ut, iaculis quis, sem. Suspendisse sagittis ultrices augue.
+	Chtěl bych poděkovat především TODO
 \end{acknowledgmentpage} 
 %%%%%%%%%%%%%%%%%%%
 % ACKNOWLEDGMENT END
@@ -159,9 +159,7 @@
 % ENG: choose one of approved texts of the declaration. DO NOT CREATE YOUR OWN. Find the approved texts at https://courses.fit.cvut.cz/SFE/download/index.html#_documents (document Declaration for FT in English)
 % CZE/SLO: Vyberte jedno z fakultou schvalenych prohlaseni. NEVKLADEJTE VLASTNI TEXT. Schvalena prohlaseni najdete zde: https://courses.fit.cvut.cz/SZZ/dokumenty/index.html#_dokumenty (prohlášení do ZP)
 \begin{declarationpage}
-FILL IN ACCORDING TO THE INSTRUCTIONS. VYPLŇTE V SOULADU S POKYNY. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Curabitur sagittis hendrerit ante. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Cras pede libero, dapibus nec, pretium sit amet, tempor quis. Sed vel lectus. Donec odio tempus molestie, porttitor ut, iaculis quis, sem. Suspendisse sagittis ultrices augue. Donec ipsum massa, ullamcorper in, auctor et, scelerisque sed, est. In sem justo, commodo ut, suscipit at, pharetra vitae, orci. Pellentesque pretium lectus id turpis.
-
-Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Curabitur sagittis hendrerit ante. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos hymenaeos. Cras pede libero, dapibus nec, pretium sit amet, tempor quis. Sed vel lectus. Donec odio tempus molestie, porttitor ut, iaculis quis, sem. Suspendisse sagittis ultrices augue. Donec ipsum massa, ullamcorper in, auctor et, scelerisque sed, est. In sem justo, commodo ut, suscipit at, pharetra vitae, orci. Pellentesque pretium lectus id turpis.
+FILL IN ACCORDING TO THE INSTRUCTIONS. VYPLŇTE V SOULADU S POKYNY. TODO
 \end{declarationpage}
 %%%%%%%%%%%%%%%%%%%
 % DECLARATION END
@@ -174,29 +172,18 @@ Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Curabitur sagittis hen
 % FILL IN / MODIFY
 % OR REMOVE ENTIRELY (upon agreement with your supervisor)
 % (appropriate to remove in most theses)
-%%%%%%%%%%%%%%%%%%%
-\begin{summarypage}
-\section*{Summary section}
-
-\lipsum[1][1-8]
-
-\section*{Summary section}
-
-\lipsum[2][1-6]
-
-\section*{Summary section}
-
-\lipsum[3]
-
-\section*{Summary section}
-
-\lipsum[2]
-
-\section*{Summary section}
-
-\lipsum[1][1-8] Lorem lorem lorem.
-\end{summarypage}
-%%%%%%%%%%%%%%%%%%%
+%\begin{summarypage}
+%\section*{Summary section}
+%\lipsum[1][1-8]
+%\section*{Summary section}
+%\lipsum[2][1-6]
+%\section*{Summary section}
+%\lipsum[3]
+%\section*{Summary section}
+%\lipsum[2]
+%\section*{Summary section}
+%\lipsum[1][1-8] Lorem lorem lorem.
+%\end{summarypage}
 % SUMMARY END
 %%%%%%%%%%%%%%%%%%%
 
@@ -209,15 +196,7 @@ Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Curabitur sagittis hen
 \chapter{Seznam zkratek}
 	
 \begin{tabular}{rl}
-DFA & Deterministic Finite Automaton\\
-FA & Finite Automaton\\
-LPS & Labelled Prüfer Sequence\\
-NFA & Nondeterministic Finite Automaton\\
-NPS & Numbered Prüfer Sequence\\
-XML & Extensible Markup Language\\
-XPath & XML Path Language\\
-XSLT & eXtensible Stylesheet Language Transformations\\
-W3C & World Wide Web Consortium
+TODO & Dodělat seznam zkratek\\
 \end{tabular}
 %%%%%%%%%%%%%%%%%%%
 % ABBREVIATIONS END
@@ -230,7 +209,9 @@ W3C & World Wide Web Consortium
 % MODIFY ANYTHING BELOW THIS LINE
 %%%%%%%%%%%%%%%%%%%
 
-\include{text/text} % include `text.tex' from `text/' subdirectory
+\include{text/1_intro} % include `text.tex' from `text/' subdirectory
+
+\include{text/2_theory}
 
 \appendix\appendixinit % do not remove these two commands
 
