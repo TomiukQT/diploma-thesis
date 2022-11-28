@@ -1,4 +1,3 @@
-
 name: Build LaTeX document
 on: [push]
 jobs:
@@ -8,13 +7,15 @@ jobs:
       - name: Set up Git repository
         uses: actions/checkout@v3
       - name: Compile LaTeX document
-        uses: repaction/texlive@main
+        uses: xu-cheng/latex-action@v2
         with:
-          tex_files: 
-            doc/ctufit-thesis.tex
-
-        - name: Upload PDF file
+          root_file: doc/ctufit-thesis.tex
+          latexmk_use_xelatex: true
+        env:
+          TEXINPUTS: .;doc/;doc/pcg/
+        
+      - name: Upload PDF file
         uses: actions/upload-artifact@v3
         with:
           name: PDF
-          path: dp_valent13.pdf          
+          path: dp_valent13.pdf
