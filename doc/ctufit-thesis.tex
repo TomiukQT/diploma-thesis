@@ -93,6 +93,12 @@
 \usepackage{listings} % typesetting of sources
 % \usepackage{minted} % typesetting of sources
 
+\usepackage{xcolor} 
+\newcommand{\todo}[1]{\textcolor{red}{\textbf{[[#1]]}}}
+
+\usepackage{blindtext}
+\newcommand{\blind}[1][1]{\textcolor{gray}{\Blindtext[#1][1]}}
+
 %theorems, definitions, etc.
 \theoremstyle{plain}
 \newtheorem{theorem}{Věta}
@@ -159,7 +165,7 @@
 % ENG: choose one of approved texts of the declaration. DO NOT CREATE YOUR OWN. Find the approved texts at https://courses.fit.cvut.cz/SFE/download/index.html#_documents (document Declaration for FT in English)
 % CZE/SLO: Vyberte jedno z fakultou schvalenych prohlaseni. NEVKLADEJTE VLASTNI TEXT. Schvalena prohlaseni najdete zde: https://courses.fit.cvut.cz/SZZ/dokumenty/index.html#_dokumenty (prohlášení do ZP)
 \begin{declarationpage}
-FILL IN ACCORDING TO THE INSTRUCTIONS. VYPLŇTE V SOULADU S POKYNY. TODO
+\todo{FILL IN ACCORDING TO THE INSTRUCTIONS. VYPLŇTE V SOULADU S POKYNY.}
 \end{declarationpage}
 %%%%%%%%%%%%%%%%%%%
 % DECLARATION END
@@ -196,7 +202,7 @@ FILL IN ACCORDING TO THE INSTRUCTIONS. VYPLŇTE V SOULADU S POKYNY. TODO
 \chapter{Seznam zkratek}
 	
 \begin{tabular}{rl}
-TODO & Dodělat seznam zkratek\\
+TODO & \todo{Dodělat seznam zkratek}\\
 \end{tabular}
 %%%%%%%%%%%%%%%%%%%
 % ABBREVIATIONS END
@@ -208,7 +214,6 @@ TODO & Dodělat seznam zkratek\\
 % THE THESIS
 % MODIFY ANYTHING BELOW THIS LINE
 %%%%%%%%%%%%%%%%%%%
-
 \include{text/1_intro} % include `text.tex' from `text/' subdirectory
 
 \include{text/2_theory}
