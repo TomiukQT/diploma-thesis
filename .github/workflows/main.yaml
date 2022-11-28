@@ -11,7 +11,7 @@ jobs:
         with:
           root_file: doc/ctufit-thesis.tex
         env:
-          TEXINPUTS: .;doc/;$TEXINPUTS
+          TEXINPUTS: .;doc/;pcg/
         
       - name: Upload PDF file
         uses: actions/upload-artifact@v3
