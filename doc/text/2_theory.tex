@@ -1,5 +1,5 @@
 % Kapitola Teorie
-\chapter{Teorie TODO Rename}
+\chapter{Teoretická východiska práce}
 
 \begin{chapterabstract}
 	V této kapitole se budeme zabývat teoretickými východisky práce a vymezením používaných pojmů.
@@ -12,8 +12,8 @@ Na poli výzkumu dolování dat z textu můžeme narazit na dva pojmy, které js
 Podle Medhata a spol. můžeme SA rozdělit na 3 klasifikační úrovně \cite{Medhat}:
 \begin{description}
 	\item[Document-level] Základní jednotkou informace je jeden dokument (týkající se jednoho tématu)
-	
-	\item[Sentence-level] Určuje sentiment na základě jedné věty.
+
+	\item[Sentence-level] Určuje sentiment na základě jedné věty. 
 	
 	\item[Aspect-based] Určuje sentiment s ohledem na entity a jejich aspekty, kde autoři názoru mohou poskytovat různé názory na různé aspekty jedné entity (např. \uv{V této firmě se necítím dobře, ale platové podmínky jsou nejlepší na trhu}).
 \end{description}
@@ -27,14 +27,19 @@ Feldman k těmto úrovním přidává ještě další 2 \cite{Feldman}:
 \end{description}
 
 \subsection{Document-level}
-\blind[2]
+Jedná se o nejjedodušší formu SA. Jak již bylo řečeno, základní jednotkou informace této metody je jeden dokument a předpokládá se, že zde autor vyjadřuje svůj názor na jeden objekt. Existují dva hlavní přístupy řešení a to: supervizované a nesupervizované učení. Supervizované učení v tomto případě předpokládá, že existuje konečná množina tříd, reprezentující hledaný sentiment.  V nejjedodušším případě si vystačíme s 2 třídama, konkrétně negativní a pozitivní sentiment. Obecně se tak jedná o nějakou diskrétní škálu hodnot. 
+Nesupervizované učení využívá Semantic orientation (dále jen SO) \todo{SO = kapitola?} konkrétních slov nebo vět. 
 \subsection{Sentence-level}
-\blind[2]
+Pokud problém vyžaduje detailnější analýzu, než poskytuje Document-level, využijeme Sentence-level metodu. Prvotně musíme věty rozdělit na subjektivní a objektivní. Objektivní věty se pro další analýzu často nevyužívají, ale některé přístupy využívají oba typy vět. Po rozdělení můžeme opět využít buďto supervizované nebo nesupervizované učení, stejně tak jako u Dokument-level analýzy.
+Narayanan a spol. ukázali, že je vhodné na různé věty používat různé metody \cite{Feldman24}. Konrétně věty různých typů: tázací, podmiňovací a sarkastické. 
 \subsection{Aspect-level}
-Není nijak zvláště rozdílná od Dokument-level analýzy, protože věty jsou v principu jen krátké dokumenty. 
-\blind[2]
+Předchozí 2 typy byly předpokládaly že se každý dokument nebo věta váže k jednomu objektu. V mnoha případech však lidé hovoří o více objektech s více aspekty (objektem může být např. mobilní telefon, u kterého se můžeme vyjádřit k jeho aspektům (rychlost, velikost, paměť, atd.) kladně i záporně). Kdybychom analyzovali text o jednom objektu s více aspekty těmito přístupy, došlo by ke ztrátě mnoha informací. Aspect-level analýza se proto zaměřuje v na jednoltlivé aspekty objektu a k nim přiřazuje zjištěný sentiment. 
+
+Nejdříve tedy musíme identifikovat aspekty objektu. Většina komerčních produktů používá přístup, kde si nejdříve vyfiltrují všechny fráze s podstatnými jmény (dále je n NPs -noun
+phrases), kterých je určitý počet. \cite{Feldman} Dále pak můžeme zredukovat šum v NPs \todo{cite Feldman30} pomocí PMI \todo{PMI}. Existují ale i další přístupy: Například phrase dependency parser, Conditional Random Field, atd. Tyto metody identifikují takzvané explicitní aspekty, ale v textu se mohou nacházet i implicitní aspekty (např. ve větě: \uv{Toto auto je pomalé} není nikde uveden aspekt rychlosti).\todo{implicit metody} \uv{Finální polarita každého aspektu je determninována váženým průměrem polarit všech výrazů sentimentu nepřímo vážené vzdálenopsti  mezi aspektem a výrazem sentimentu.} \cite*[překlad vlastní]{Feldman}
+
 \subsection{Komparativní analýza}
-\blind[2]
+V některých případech se lidé nevyjadřují k objektech příme, ale porovnávají 2 objekty mezi sebou (např. \uv{Windows je lepší operační systém, než jakákoliv distribuce Linuxu}).
 \subsection{Lexicon acquisition}
 \blind[2]
 		
