@@ -39,7 +39,17 @@ Nejdříve tedy musíme identifikovat aspekty objektu. Většina komerčních pr
 phrases), kterých je určitý počet. \cite{Feldman} Dále pak můžeme zredukovat šum v NPs \todo{cite Feldman30} pomocí PMI \todo{PMI}. Existují ale i další přístupy: Například phrase dependency parser, Conditional Random Field, atd. Tyto metody identifikují takzvané explicitní aspekty, ale v textu se mohou nacházet i implicitní aspekty (např. ve větě: \uv{Toto auto je pomalé} není nikde uveden aspekt rychlosti).\todo{implicit metody} \uv{Finální polarita každého aspektu je determninována váženým průměrem polarit všech výrazů sentimentu nepřímo vážené vzdálenopsti  mezi aspektem a výrazem sentimentu.} \cite*[překlad vlastní]{Feldman}
 
 \subsection{Komparativní analýza}
-V některých případech se lidé nevyjadřují k objektech příme, ale porovnávají 2 objekty mezi sebou (např. \uv{Windows je lepší operační systém, než jakákoliv distribuce Linuxu}).
+V některých případech se lidé nevyjadřují k objektech příme, ale porovnávají 2 objekty mezi sebou (např. \uv{Windows je lepší operační systém, než jakákoliv distribuce Linuxu}). Zde tedy musíme vyextahovat objekty z těchto vět. Autorům Jindal a Jiu se podařilo najít relativně malou množinu slov, která tyto věty dokáže identifikovat. \cite{comparative} Jedná se o anglické slova, například o: \cite{comparative} 
+\begin{description}
+	\item[Srovnávací přídavná jména a příslovce] \uv{more} - více, \uv{less} - méně a slova končící koncovkou \uv{-er}
+
+	\item[Přídavná jména a příslovce v superlativu]  \uv{most} - nejvíce, \uv{least} - nejméně a slova končící koncovkou \uv{-est}
+	
+	\item[Jiné fráze] \uv{than} - než, \uv{outperform} - překonat, \uv{up against} - proti, $\dots$
+\end{description}
+\uv{Tyto klíčová slova a fráze (celkem 83) dokáží zachytit komparativní věty se senzitivitou $94\%$}. \cite[překlad vlastní]{comparative}
+
+
 \subsection{Lexicon acquisition}
 \blind[2]
 		
