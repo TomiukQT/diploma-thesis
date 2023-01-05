@@ -53,4 +53,51 @@ V některých případech se lidé nevyjadřují k objektech příme, ale porovn
 \subsection{Lexicon acquisition}
 \blind[2]
 		
+\section{Metodika analýzy}
 
+Analýza sentimentu si můžeme představit jako proces. Na obrázku \ref{fig:SAprocess} můžeme vidět její součásti. Data nejčastěji bývají z recenzí produktů, avšak to mohou být i novinové články nebo politické debaty. \cite[překlad vlastní]{Medhat}. Ve fázi identifikace sentimentu vybíráme možné slova nebo fráze vyjadřující názor. Následuje výběr příznaků a klasifikace sentimentu, kde existuje více přístupů. \cite[překlad vlastní]{Medhat} 
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[height=5cm]{text/img/SAProcess.PNG}
+    \caption{\todo{Přeložit do češtiny a popisek.}}
+    \label{fig:SAprocess}
+\end{figure}
+
+Tyto přístupy můžeme rozdělit na dvě základní skupiny: strojové učení a přístup založený na slovníku.
+
+\subsection{Přístupy strojového učení}
+
+Strojové učení se běžně rozděluje na tyto skupiny: \cite{ml1} 
+
+\begin{description}
+	\item[Supervizované učení] - Máme k dispozici vstupní data (příznaky) a k nim přiřazený správný výstup (ten může být diskrétní resp. spojitý a potom úlohu nazýváme klasifikační resp. regresní). Díky označeným datům, můžeme trénovat náš model, na základě chyb od originálního výstupu. Data se zde rozdělují do 3 skupin: trénovací, validační, testovací v určitém poměru (zde se zdroje neschodují na stejných hodnotách, většinou se ale jedná o poměr 3:1:1 viz. Obrázek \ref{fig:datasplit}). Trénovací slouží k trénování modelu a jeho parametrů, validační k jeho porovnání s ostatními natrénovanými modely a testovací pak k odhadu chyby našeho modelu. 
+	\item[Nesupervizované učení] - Zde nemáme ke vstupním datům odpovídající výstup a autor zde musím sám najít souvislosti. 
+	\item[Semi-supervizované učení] - Kombinace supervizovaného a nesupervizovaného učení
+	\item[Posilované učení] -  Ayodele jej definuje takto: \uv{Algoritmus se učí pravidla, jak jednat při pozorování světa. Každá akce má nějaký dopad na prostředí a prostředí poskytuje zpětnou vazbu, která řídí algoritmus učení.} \cite[překlad vlastní]{ml1} 
+	
+	\item[A další] 
+\end{description}
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[height=5cm]{text/img/data.png}
+    \caption{\todo{Přeložit do češtiny a popisek.}}
+    \label{fig:datasplit}
+\end{figure}
+
+Medhat ve svém článku ukázal používáné metody z jiných článků zabývajících se analýzou sentimentu. \cite{Medhat} Výčet z kategorie strojového učení pak můžeme vidět na Obrázku \ref{fig:MedhatML}. V následujících kapitolách si tyto metody/modely představíme.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[height=3cm]{text/img/medhatML.PNG}
+    \caption{\todo{Přeložit do češtiny a popisek.}}
+    \label{fig:MedhatML}
+\end{figure}
+
+\subsubsection*{Rozhodovací stromy}
+Kotsiantis\uv{Rozhodovací stromy jsou sekvenční modely, které logicky kombinují posloupnost jednoduchých testů;
+každý test porovnává číselný atribut s prahovou hodnotou nebo s nominálním atributem
+soubor možných hodnot.} \cite[překlad vlastní]{bibid}s
