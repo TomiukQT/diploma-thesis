@@ -98,6 +98,38 @@ Medhat ve svém článku ukázal používáné metody z jiných článků zabýv
 \end{figure}
 
 \subsubsection*{Rozhodovací stromy}
-Kotsiantis\uv{Rozhodovací stromy jsou sekvenční modely, které logicky kombinují posloupnost jednoduchých testů;
+Rozhodovací strom je jednoduchý model, který můžeme použít ke klasifikaci i regresi. Kotsiantis jej definuje takto: \uv{Rozhodovací stromy jsou sekvenční modely, které postupně provádějí jednoduché testy, porovnání;
 každý test porovnává číselný atribut s prahovou hodnotou nebo s nominálním atributem
-soubor možných hodnot.} \cite[překlad vlastní]{bibid}s
+soubor možných hodnot.} \cite[překlad vlastní]{decisionTree} Russel a Norvig jej zase definují obecněji jako \uv{funkci, která jako vstup očekává vektor příznaků a vrací jednu hodnotu -- rozhodnutí}. \cite[překlad vlastní]{aimodern} Oproti jiným modelům jsou rozhodovací stromy také lépe graficky reprezentované (pomocí stromové struktury viz obrázek 
+\ref{fig:decisionTree}) a rychlé k pochopení. Výsledek klasifikaci resp. regrese k určitým příznakům zjistíme z daného listu, do kterého se vstupní data postupním porovnáváním listu \textit{dostala}. 
+
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[height=5cm]{text/img/decisionTree.png}
+    \caption{\todo{Přeložit do češtiny a popisek.}}
+    \label{fig:decisionTree}
+\end{figure}
+
+Než vysvětlíme jak stromy vytvářet, budeme k tomu potřebovat různé metriky, pomocí kterých určíme kvalitu rozdělení vektoru příznaků podle určité podmínky.
+
+Jednou z metrik je tzv. \textbf{informační zisk} a vypočítáme ho jako\cite{decisionTrees}:
+\[
+InformacniZisk(\mathcal{D},X_i) = IG(\mathcal{D}) = H(\mathcal{D}) - \sum^{k-1}_{j = 0} t_j  H(\mathcal{D}_j),
+\]kde $\mathcal{D}_j$ je podmnožina $\mathcal{D}$ pro které $X_i = j$, $t_j$ je podíl počtu prvků v $\mathcal{D}_j$ a $\mathcal{D}$. 
+
+Funkce $H(\mathcal{D})$ ve vzorci je pak odhad entropie dat:
+\[
+Entropie(\mathcal{D}) = H(\mathcal{D}) = - \sum^{k-1}_{i = 0} p_i  \log(p_i),
+\]
+kde $\mathcal{D}$ je množina dat, $p_i$ je  poměr počtu $i$ v $\mathcal{D}$ a platí $ \sum^{k-1}_{i = 0} p_i = 1$. 
+
+
+Další metrikou je tzv. \textbf{Gini index}, která udává míru toho, že nově přidaný prvek bude špatně klasifikován. Přesný výpočet je \cite{vzd}:
+\[
+GiniIndex(\mathcal{D}) = GI(\mathcal{D}) = \sum^{k-1}_{i = 0} p_i  (1 - p_i) 
+\]
+Gini index můžeme využit při výpočtu informačního zisku, kdy jen ve vzorci nahradíme $(\mathcal{D})$ za  $GI(\mathcal{D})$.
+
+Můžeme 
