@@ -135,3 +135,24 @@ Gini index můžeme využit při výpočtu informačního zisku, kdy jen ve vzor
 Můžeme
 
 \subsubsection{Naivní bayesův klasifikátor}
+Tento klasifikátor spadá do kategorie pravděbodobnostních klasifikátorů. Klasické klasifikátory jsou reprezentované funkcí, která mapuje vstup (vektor příznaků) na výslednou klasifikační třídu. Narozdíl od nich, pravděbodobnostní klasifikátory vrací podmíněnou pravděbodobnost $p(y|x)$, kde $y$ je výsledná třída  a $x$ je vektor příznaků.
+
+\begin{definition}[Podmíněná pravděbodobnost]
+    $$ p(y|x) = \frac{p(y,x)}{p(x)} $$
+    \end{definition}
+
+Existují dva přístupy, jak tuto pravděbodobnost dostat. \cite{naiveBayes} \uv{Prvním je přímo vytvořit funkci, která vypočítá určité pravděbodobnosti $p(y|x)$} \cite*[překlad vlasntí]{naiveBayes}. Tento model pak nazýváme \textbb{diskriminativní}.
+
+Druhým přístup nazýváme \textbb{generativní}. Pro každou hodnotu $y$ model naučíme $p(x|y)$ a $p(y)$. Poté budeme potřebovat Bayesovu větu \cite{prob}:
+
+    \begin{definition}[Bayesova věta]
+        Buďiž $a_1, a_2, \hdots, a_n$ vzájemně disjunktní náhodné jevy, jejichž sjednocení tvoří celý pravděbodobnostní prostor a platí: $\forall i : p(A_i) > 0 $. Pak pro libovný jev $b$ takový, že $p(b) > 0$, platí: 
+        $$p(a_i|b) = \frac{p(a_i)p(b|a_i)}{p(b)} = \frac{p(a_i)p(b|a_i)}{\sum_{i=1}^{n}p(b_i|a)p(b_i)}$$
+        \end{definition}
+
+Po aplikování Bayesovy věty dostaneme chtěnou pravděbodobnost $p(y|x)$ \cite{naiveBayes}:
+
+$$p(y|x) = \frac{p(x,y)}{p(x)} = \frac{p(x|y)p(y)}{\sum_{y' = 1}^{C}p(x|y')p(y')}$$
+Označujeme ho generativním, protože představuje úplnou informaci o rozdělení, ze kterého byla data generována. Výslednou predikci klasifikační třídy pak určíme jako 
+$$ Y = arg\,max_y p(y|x)$$
+
