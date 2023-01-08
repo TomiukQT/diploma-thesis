@@ -114,6 +114,7 @@ soubor možných hodnot.} \cite[překlad vlastní]{decisionTree} Russel a Norvig
 
 Než vysvětlíme jak stromy vytvářet, budeme k tomu potřebovat různé metriky, pomocí kterých určíme kvalitu rozdělení vektoru příznaků podle určité podmínky.
 
+\todo{Trochu přeformulovat}
 Jednou z metrik je tzv. \textbf{informační zisk} a vypočítáme ho jako\cite{decisionTrees}:
 \[
 InformacniZisk(\mathcal{D},X_i) = IG(\mathcal{D}) = H(\mathcal{D}) - \sum^{k-1}_{j = 0} t_j  H(\mathcal{D}_j),
@@ -132,7 +133,55 @@ GiniIndex(\mathcal{D}) = GI(\mathcal{D}) = \sum^{k-1}_{i = 0} p_i  (1 - p_i)
 \]
 Gini index můžeme využit při výpočtu informačního zisku, kdy jen ve vzorci nahradíme $(\mathcal{D})$ za  $GI(\mathcal{D})$.
 
-Můžeme
+
+Narozdíl od paramestrů, které hledáme při trénování (parametry = vrcholy, trénování = konstrukce stromu),  má rozohodovací strom hyperparametry. Hyperparametry modelu jsou takové parametry, které se používají při konstrukci stromu. Určují používané metriky a hodnoty podmínek větvení, resp. vytváření listů. Hledání nejoptimálnějších hodnot se nazývá \textbf{ladění hyperparametrů} a jedná se o systematické zkoušení různých kombinací hodnot a vyhodnocování výsledků modelu. Mezi základní hyperparametry patří \cite{scikit-learn}:
+\begin{description}
+\item[Kritérium] -- Funkce, která měří kvalitu rozdělení příznaků. Nejčastější jsou Gini index nebo Entropie. Tato funkce se pak použije při výpočtu informačního zisku.
+\item[Maximální hloubka] -- Maximální hloubka rozhodovacího stromu. V každém úplném binárním stromě s hloubkou $h$ je přesně $2^{h-1}$. Kdybychom měli $h$ příznaků \footnote{Opět pro jednoduchost uvažujeme binární klasifikaci.}, tak počet všech možnách kombinací je také $2^{h-1}$, čímž by strom \uv{degradoval} na slovník. Díky tomuto hyperparametru můžeme této \uv{degradaci} předejít.
+\item[Váha příznaků] -- Slouží k vážení důležitosti příznaku.
+\item[Minimální počet výsledků v listu] --  Pokud při konstrukci stromu není dostatek příznaků, vytvoří se list.
+\end{description} 
+
+K vytváření stromů pak existují algoritmy. Známý je ID3, který konstruuje stromy pomocí hladového přístupu. Jeho nevýhodou je předpoklad diskrétních dat a absence chybějích hodnot. Také se na malých datasetech přeučuje. 
+
+\begin{algorithm}[h]
+
+    \SetKwInput{Vst}{Vstup}
+    \SetKwInput{Vyst}{Výstup}
+    
+    \Vst{Matice příznaků, vektor vysvětlované proměnné}
+    
+    \Vyst{Rozhodovací strom}
+    
+    
+     \uIf{žádná data}
+     {
+        \Return fail list
+     }
+     \uElseIf{$\forall$ příklady mají stejný výsledek}
+     {
+        \Return list, který vrací výsledek klasifikace
+     }
+     \uElseIf{je splněna podmínka hyperparametru}
+     {
+        \Return list, který vrací výsledek klasifikace
+     }
+     \Else
+     {
+        A $\leftarrow$ příznak nejlépe rozdělující vektor výsledků\;
+        r, l  = split(A,X,y)\;
+        levý\_syn $\leftarrow$ ID3(rX,rY)\;
+        pravý\_syn $\leftarrow$ ID3(lX,lY)\;
+     }
+    
+     \caption{Iterative Dichotomiser 3}
+     \label{id3}
+    \end{algorithm}
+
+Jeho vylepšení nástupci C4.5 a C5.0, kteří už dokážou pracovat i se spojitými daty i chybějícími hodnotami. Od svého předchůdce se liší technikou \textbf{prořezávání}, při které po konstrukci stromu prochází a odstraňuje zbytečné větve. Tato technika nám pomůže proti přeučení stromu. Existují dva druhy prořezávání, a to pre-prořezávání (při zjištění nespolehlivé informace přestaneme dále rozvíjet současnou větev) a post-prořezávání (nejdříve se zkonstruuje strom a zbytečné části se odstraní).
+
+Posledním algoritmem je CART nebo-li Classification And Regression Trees a je velice podobný algoritmu C4.5. Narozdíl od něj ale umí pracovat se spojitou vysvětlovanou proměnou (tj. regrese). \uv{\textit{CART konstruuje binární stromy pomocí prahových hodnot, které přinášejí největší zisk informací v každém uzlu.}}
+
 
 \subsubsection{Naivní Bayesův klasifikátor}
 Tento klasifikátor spadá do kategorie pravděbodobnostních klasifikátorů. Klasické klasifikátory jsou reprezentované funkcí, která mapuje vstup (vektor příznaků) na výslednou klasifikační třídu. Narozdíl od nich, pravděbodobnostní klasifikátory vrací podmíněnou pravděbodobnost $p(y|x)$, kde $y$ je výsledná třída  a $x$ je vektor příznaků.
@@ -141,9 +190,9 @@ Tento klasifikátor spadá do kategorie pravděbodobnostních klasifikátorů. K
     $$ p(y|x) = \frac{p(y,x)}{p(x)} $$
     \end{definition}
 
-Existují dva přístupy, jak tuto pravděbodobnost dostat. \cite{naiveBayes} \uv{Prvním je přímo vytvořit funkci, která vypočítá určité pravděbodobnosti $p(y|x)$} \cite[překlad vlasntí]{naiveBayes}. Tento model pak nazýváme \textbb{diskriminativní}.
+Existují dva přístupy, jak tuto pravděbodobnost dostat. \cite{naiveBayes} \uv{Prvním je přímo vytvořit funkci, která vypočítá určité pravděbodobnosti $p(y|x)$} \cite[překlad vlasntí]{naiveBayes}. Tento model pak nazýváme \textbf{diskriminativní}.
 
-Druhým přístup nazýváme \textbb{generativní}. Pro každou hodnotu $y$ model naučíme $p(x|y)$ a $p(y)$. Poté budeme potřebovat Bayesovu větu \cite{prob}:
+Druhým přístup nazýváme \textbf{generativní}. Pro každou hodnotu $y$ model naučíme $p(x|y)$ a $p(y)$. Poté budeme potřebovat Bayesovu větu \cite{prob}:
 
     \begin{definition}[Bayesova věta]
         Buďiž $a_1, a_2, \hdots, a_n$ vzájemně disjunktní náhodné jevy, jejichž sjednocení tvoří celý pravděbodobnostní prostor a platí: $\forall i : p(A_i) > 0 $. Pak pro libovný jev $b$ takový, že $p(b) > 0$, platí: 
@@ -161,3 +210,48 @@ $$ p(x|y = c) = \prod_{i=1}^{D}p(x_i|y = c)$$
 \uv{I přes to, že toto obvykle neplatí (příznaky jsou většinou závislé), výsledný model je jednoduché natrénovat a funguje překvapivě dobře.}\cite[překlad vlastní]{naiveBayes}
 \todo{ODHADY PARAMETRŮ}
 
+\subsubsection{Bayesovské sítě}
+
+Bayesovské sítě jsou typem pravděpodobnostního grafického modelu, který pro výpočty pravděpodobnosti používá bayesovské odvození. Bayesovské sítě mají za cíl modelovat podmíněnou závislost, a tedy i kauzalitu, reprezentováním podmíněné závislosti hranami v orientovaném grafu.
+
+Pro začátek si zadefinujeme pár pojmů. 
+
+\begin{definition}[DAG - Orientovaný acyklický graf]
+    Orientovaný graf G nazveme \textbf{acyklický}, pokud neobsahuje jako podgraf orientovanou kružnici.
+    \end{definition}
+
+    \begin{lemma}[Multiplikativní zákon]
+        Pro jevy $a_1, a_2, \hdots, a_n$ platí: 
+        $$p(a_1 \cap \hdots \cap a_n) = p(a_1)p(a_2|a_1)p(a_3|a_1 \cap a_2)\hdots p(a_n| a_1 \cap \hdots \cap A_{n-1}) $$
+        \end{lemma}
+
+        \begin{definition}[Podmíněná nezávislost]
+            Buď jev $c$ náhodný jev s $p(c) > 0 $. Náhodné jevy $a, b$ jsou \textit{podmíněně nezávislé za podmínky c} pokud platí: 
+            $$p(a \cap b|c) = p(a|c)p(b|c)$$
+            \end{definition}
+Bayesovská síť je  orientovaný acyklický graf, kde každý vrchol představuje náhodný jev a hrany mezi vrcholy představují podmíněné pravděbodobnosti. 
+
+\subsubsection{Neuronové sítě}
+Neuronové sítě se svojí strukturou inspirovali strukturou vzájemně propojených neuronů v biologických systémech. 
+
+Základní stavební jednotkou je neuron, který:
+\begin{itemize}
+    \item Přijímá reálné vstupy
+    \item Produkuje jeden výstup
+\end{itemize}
+
+Nejjednodušším modelem neuronové sítě určeným ke klasifikaci aje tzv. jednovrstvý perceptron (schéma viz. \ref*{fig:perceptron}).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[height=5cm]{text/img/pereptron.PNG}
+    \caption{\todo{Přeložit do češtiny a popisek.}}
+    \label{fig:perceptron}
+\end{figure}
+
+Výstup neuronu se získá aplikací nelineární aktivační funkce f na hodnotu vnitřního potenciálu $\xi$ daného
+součtem vstupů $x_1, \hdots , x_n$ pronásobených příslušnými vahami $w_1, \hdots , w_n$ a interceptu $w_0$. V případě perceptronu uvažujeme jako aktivační funkci tzv. skokovou funkci dánou předpisem:
+$$f(\xi) = \begin{cases}1 & \text{když }\ \xi \geq 0,\\0 &\text{když} \xi < 0\end{cases} $$
+\subsubsection{SVM}
+\subsubsection{Maximální entropie}
+\subsubsection{Ruled based?}
