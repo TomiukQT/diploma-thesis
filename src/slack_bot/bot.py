@@ -14,6 +14,7 @@ client = slack.WebClient(token=TOKEN)
 #client.chat_postMessage(channel='#bot_test', text='Hello')
 BOT_ID = client.api_call('auth.test')['user_id']
 
+
 @slack_event_adapter.on('challenge')
 def url_auth(payload):
     print(payload)
@@ -41,13 +42,17 @@ def message(payload):
             assert e.response["error"]
             print(f"Got an error: {e.response['error']}")
 
+
 @app.route('/analyze', methods=['POST'])
 def analyze():
+
     data = request.form
     print(data)
     channel_id = data.get('channel_id')
-    client.chat_postMessage(channel=channel_id, text=f'I got command from you!')
+    history = client.conversations_history(channel_id)
+    client.chat_postMessage(channel=channel_id, text=f'Message count: {len(history)}')
     return Response(), 200
+
 
 if __name__ == '__main__':
     app.run(debug=True)
