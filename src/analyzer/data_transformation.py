@@ -1,12 +1,13 @@
 from nltk import PorterStemmer
 from sklearn.feature_extraction.text import TfidfVectorizer
 import pandas as pd
-
+import pickle
 
 class DataTransformer:
 
-    def __init__(self):
+    def __init__(self, path):
         self.stemmer = PorterStemmer()
+        self.vectorizer = pickle.load(open(path, 'rb'))
 
     def stemming(self, data: pd.Series):
         tokenized = data.apply(lambda x: x.split())
@@ -22,11 +23,10 @@ class DataTransformer:
 
 class TfidfDataTransformer(DataTransformer):
 
-    def __init__(self):
-        DataTransformer.__init__()
+    def __init__(self, path):
+        DataTransformer.__init__(self, path)
 
     def transform(self, data: pd.Series, language: str = 'english'):
-        tfidf = TfidfVectorizer(max_df=0.90, min_df=2, max_features=1000, stop_words='english')
-        tfidf_matrix = tfidf.fit_transform(data)
+        tfidf_matrix = self.vectorizer.transform(data)
         return pd.DataFrame(tfidf_matrix.todense())
 
