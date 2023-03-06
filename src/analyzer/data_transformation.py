@@ -8,7 +8,7 @@ class DataTransformer:
     def __init__(self, path):
         self.stemmer = PorterStemmer()
         if path is not None:
-            self.vectorizer = pickle.load(open(path, 'rb'))
+            self.vectorizer = pickle.load(open(f'{path}', 'rb'))
 
     def stemming(self, data: pd.Series):
         tokenized = data.apply(lambda x: x.split())
@@ -31,7 +31,7 @@ class TfidfDataTransformer(DataTransformer):
         DataTransformer.__init__(self, path)
 
     def vectorizer_fit(self, data: pd.Series):
-        self.vectorizer = TfidfVectorizer()
+        self.vectorizer = TfidfVectorizer(max_features=1000)
         self.vectorizer.fit(data)
 
     def transform(self, data: pd.Series, language: str = 'english'):

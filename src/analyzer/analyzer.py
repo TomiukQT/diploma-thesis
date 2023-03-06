@@ -15,8 +15,10 @@ class Analyzer:
         self.data_transformer = None
 
     def _load(self):
-        self.model = pickle.load(open(self.model_path, 'rb'))
-        self.data_transformer = TfidfDataTransformer(self.vectorizer_path)
+        if self.model is None:
+            self.model = pickle.load(open(self.model_path, 'rb'))
+        if self.data_transformer is None:
+            self.data_transformer = TfidfDataTransformer(self.vectorizer_path)
 
     def analyze_sentence(self, text) -> (float, float):
         if self.model is None or self.data_transformer is None:
@@ -28,12 +30,12 @@ class Analyzer:
             self._load()
         data = pd.Series([clean_mentions(t) for t in texts])
         data = self.data_transformer.stemming(data)
-        data_len = len(data)
-        tr_data = pd.read_csv('models/model_data.csv')
-        tr_data.dropna(inplace=True)
-        tr_data = pd.concat([tr_data['clean_tweet'], data])
-        data = self.data_transformer.transform(tr_data)
-        data = data[-data_len:]
+        #data_len = len(data)
+        #tr_data = pd.read_csv('models/model_data.csv')
+        #tr_data.dropna(inplace=True)
+        #tr_data = pd.concat([tr_data['clean_tweet'], data])
+        data = self.data_transformer.transform(data)
+        #data = data[-data_len:]
         print(data)
         predictions = self.model.predict_proba(data)
         print(predictions)
