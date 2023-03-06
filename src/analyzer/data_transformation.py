@@ -1,5 +1,5 @@
 from nltk import PorterStemmer
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import pandas as pd
 import pickle
 
@@ -39,4 +39,17 @@ class TfidfDataTransformer(DataTransformer):
         return pd.DataFrame(tfidf_matrix.todense())
 
 
+class BagOfWordsTransformer(DataTransformer):
+
+    def __init__(self, path=None, lang='english'):
+        DataTransformer.__init__(self, path)
+        self.lang = lang
+
+    def vectorizer_fit(self, data: pd.Series):
+        self.vectorizer = CountVectorizer(max_df=0.90, min_df=2, max_features=1000, stop_words=self.lang)
+        self.vectorizer.fit(data)
+
+    def transform(self, data: pd.Series, language: str = 'english'):
+        bow_matrix = self.vectorizer.transform(data)
+        return pd.DataFrame(bow_matrix.todense())
 

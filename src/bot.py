@@ -90,6 +90,3 @@ def filter_history(history: []):
             filtered.append(Message(msg['text'], msg['user'], msg['ts']))
     return filtered
 
-
-if __name__ == '__main__':
-    app.run(debug=True)
