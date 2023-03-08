@@ -36,7 +36,7 @@ class Analyzer:
         #tr_data = pd.concat([tr_data['clean_tweet'], data])
         data = self.data_transformer.transform(data)
         #data = data[-data_len:]
-        print(data)
+        #print(data)
         predictions = self.model.predict_proba(data)
-        print(predictions)
+        #print(predictions)
         return [x[0] for x in predictions]
