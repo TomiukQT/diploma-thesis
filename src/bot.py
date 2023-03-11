@@ -6,6 +6,8 @@ from slack.errors import SlackApiError
 from slackeventsapi import SlackEventAdapter
 from helpers.message import Message
 from analyzer.analyzer import Analyzer
+from collections import namedtuple
+from datetime import datetime
 
 TOKEN = os.environ['SLACK_BOT_TOKEN']
 SIGNING_SECRET = os.environ['SLACK_BOT_SIGNING_SECRET']
@@ -53,7 +55,10 @@ def analyze():
     # Load history
     # print(data)
     channel_id = data.get('channel_id')
-    history = load_channel_history(channel_id)
+    args_text = data.get('text')
+    args = parse_args(args_text)
+
+    history = load_channel_history(channel_id, date_from=args.date_from, date_to=args.date_to)
 
     filtered_history = filter_history(history)
     #print(filtered_history)
@@ -66,7 +71,7 @@ def analyze():
     return Response(), 200
 
 
-def load_channel_history(channel_id: str) -> []:
+def load_channel_history(channel_id: str, date_from=None, date_to=None) -> []:
     try:
         response = client.conversations_history(channel=channel_id, limit=200)
         history = response["messages"]
@@ -90,3 +95,22 @@ def filter_history(history: []):
             filtered.append(Message(msg['text'], msg['user'], msg['ts']))
     return filtered
 
+def parse_args(text):
+    date_range = namedtuple("DateRange", ["date_from", "date_to"])
+    try:
+        split = text.split(' ')
+        if len(split) == 0:
+            return None, None
+        if len(split) == 1:
+            datetime_from = datetime.strptime(split[0], '%d/%m/%Y')
+            return date_range(datetime_from, None)
+        else:
+            datetime_from = datetime.strptime(split[0], '%d/%m/%Y')
+            datetime_to = datetime.strptime(split[1], '%d/%m/%Y')
+            delta = datetime_to - datetime_from
+            if delta.days < 0:
+                return date_range(datetime_to, datetime_from)
+            return date_range(datetime_from, datetime_to)
+    except Exception:
+        print('Bad format of args.')
+        return date_range(None, None)
