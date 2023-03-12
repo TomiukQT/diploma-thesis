@@ -88,29 +88,49 @@ def load_channel_history(channel_id: str, date_from=None, date_to=None) -> []:
     return []
 
 
-def filter_history(history: []):
+def filter_history(history: [], date_range=None) -> []:
     filtered = []
     for msg in history:
-        if msg['user'] != BOT_ID:
+        add = True
+        # Flag if message is from bot
+        if msg['user'] == BOT_ID:
+            add = False
+        # Flag if message is not in specified date range, if date range arg was passed
+        if date_range is not None:
+            _from, _to = date_range
+            if _from is None or _to is None:
+                continue
+            stamp = int(msg['ts'])
+            date = datetime.fromtimestamp(stamp)
+            if _from > date or date > _to:
+                add = False
+        # If not flagged append to filtered history
+        if add:
             filtered.append(Message(msg['text'], msg['user'], msg['ts']))
     return filtered
 
-def parse_args(text):
+
+def parse_args(text: str) -> namedtuple:
+    # Definition of named tuple to make DateRange simplier to use
     date_range = namedtuple("DateRange", ["date_from", "date_to"])
     try:
         split = text.split(' ')
+        # If no args were given, return empty DateRange
         if len(split) == 0:
-            return None, None
+            return date_range(None, None)
+        # Parse one or two dates
         if len(split) == 1:
             datetime_from = datetime.strptime(split[0], '%d/%m/%Y')
-            return date_range(datetime_from, None)
+            return date_range(datetime_from, datetime.today())
         else:
             datetime_from = datetime.strptime(split[0], '%d/%m/%Y')
             datetime_to = datetime.strptime(split[1], '%d/%m/%Y')
             delta = datetime_to - datetime_from
+            # If dates were flipped, flip them to make correct DateRange
             if delta.days < 0:
                 return date_range(datetime_to, datetime_from)
             return date_range(datetime_from, datetime_to)
+    # If anything fails, return empty DateRange
     except Exception:
         print('Bad format of args.')
         return date_range(None, None)
