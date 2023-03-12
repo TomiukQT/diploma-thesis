@@ -1,7 +1,8 @@
+import json
 import os
 import numpy as np
 import slack
-from flask import Flask, Response, request
+from flask import Flask, Response, request, stream_with_context
 from slack.errors import SlackApiError
 from slackeventsapi import SlackEventAdapter
 from helpers.message import Message
@@ -31,6 +32,7 @@ def message(payload):
     channel_id = event.get('channel')
     user_id = event.get('user')
     text = event.get('text')
+    return Response(), 200 # TMP
     if user_id == BOT_ID:
         return
     client.chat_postMessage(channel=channel_id, text=f'{text} to you!')
@@ -58,20 +60,38 @@ def analyze():
     args_text = data.get('text')
     args = parse_args(args_text)
 
-    history = load_channel_history(channel_id, date_from=args.date_from, date_to=args.date_to)
-
-    filtered_history = filter_history(history)
-    #print(filtered_history)
+    history = load_channel_history(channel_id)
+    #print(f'History {history}')
+    filtered_history = filter_history(history, args)
+    #print(f'Filtered History {filtered_history}')
+    if len(filtered_history) <= 0:
+        client.chat_postMessage(channel=channel_id, text='No data to analyze')
+        return Response(), 200
     # Analyze messages
     sa = analyzer.get_sentiment_analysis([m.text for m in filtered_history])
     # Analyze SA
-    # Print Graph{
+    # Print Graph
+    graph_path = analyzer.get_plot(plot_path='out/graphs/foo.png', )
+
     msg = f'Analysed {len(filtered_history)} messages: Min: {min(sa)} Max: {max(sa)} Mean: {np.mean(sa)}'
-    client.chat_postMessage(channel=channel_id, text=msg)
+    #client.chat_postMessage(channel=channel_id, text=msg)
+    try:
+        response = client.files_upload(
+            file=graph_path,
+            initial_comment=msg,
+            channels=channel_id)
+        return Response(), 200
+    except SlackApiError as e:
+        # You will get a SlackApiError if "ok" is False
+        assert e.response["ok"] is False
+        # str like 'invalid_auth', 'channel_not_found'
+        assert e.response["error"]
+        print(f"Got an error: {e.response['error']}")
+        return Response(), 500
     return Response(), 200
 
 
-def load_channel_history(channel_id: str, date_from=None, date_to=None) -> []:
+def load_channel_history(channel_id: str) -> []:
     try:
         response = client.conversations_history(channel=channel_id, limit=200)
         history = response["messages"]
@@ -98,12 +118,11 @@ def filter_history(history: [], date_range=None) -> []:
         # Flag if message is not in specified date range, if date range arg was passed
         if date_range is not None:
             _from, _to = date_range
-            if _from is None or _to is None:
-                continue
-            stamp = int(msg['ts'])
-            date = datetime.fromtimestamp(stamp)
-            if _from > date or date > _to:
-                add = False
+            if _from is not None and _to is not None:
+                stamp = round(float(msg['ts']))
+                date = datetime.fromtimestamp(stamp)
+                if _from > date or date > _to:
+                    add = False
         # If not flagged append to filtered history
         if add:
             filtered.append(Message(msg['text'], msg['user'], msg['ts']))
@@ -134,3 +153,7 @@ def parse_args(text: str) -> namedtuple:
     except Exception:
         print('Bad format of args.')
         return date_range(None, None)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
