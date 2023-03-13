@@ -52,6 +52,11 @@ def message(payload):
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
+    """
+    Slash command analyze. Function is loading and filtering history in channel, where the command was called. Then
+    filtered history is analyzed and finally, bot will send graphs to channel.
+    :return: Response
+    """
 
     data = request.form
     # Load history
@@ -92,6 +97,11 @@ def analyze():
 
 
 def load_channel_history(channel_id: str) -> []:
+    """
+    Loads all historical messages in channel.
+    :param channel_id: Target Channel ID
+    :return: Channel history of messages
+    """
     try:
         response = client.conversations_history(channel=channel_id, limit=200)
         history = response["messages"]
@@ -109,6 +119,12 @@ def load_channel_history(channel_id: str) -> []:
 
 
 def filter_history(history: [], date_range=None) -> []:
+    """
+    Filter history. Remove messages from bot and filter messages outside Date Range, if specified.
+    :param history: History to be filtered
+    :param date_range: Filter option Date Range
+    :return:
+    """
     filtered = []
     for msg in history:
         add = True
@@ -130,6 +146,11 @@ def filter_history(history: [], date_range=None) -> []:
 
 
 def parse_args(text: str) -> namedtuple:
+    """
+    Parse arguments from text wrote after analyze command. Date Range is always correct or empty.
+    :param text: Arg text
+    :return: Date Range parsed from text
+    """
     # Definition of named tuple to make DateRange simplier to use
     date_range = namedtuple("DateRange", ["date_from", "date_to"])
     try:
