@@ -66,9 +66,7 @@ def analyze():
     args = parse_args(args_text)
 
     history = load_channel_history(channel_id)
-    #print(f'History {history}')
     filtered_history = filter_history(history, args)
-    #print(f'Filtered History {filtered_history}')
     if len(filtered_history) <= 0:
         client.chat_postMessage(channel=channel_id, text='No data to analyze')
         return Response(), 200
