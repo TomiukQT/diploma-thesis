@@ -28,6 +28,12 @@ def url_auth(payload):
 
 @slack_event_adapter.on('message')
 def message(payload):
+    """
+    TEST EVENT
+    TODO: TO BE REMOVED PROBABLY
+    :param payload:
+    :return:
+    """
     event = payload.get('event', {})
     channel_id = event.get('channel')
     user_id = event.get('user')

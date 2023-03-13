@@ -1,15 +1,22 @@
 import pickle
-
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from .data_cleaner import *
 from .data_transformation import TfidfDataTransformer
-import matplotlib.pyplot as plt
 
 
 class Analyzer:
+    """
+    Analyzer, which uses already pretrained model to analyze sentiment from given texts (messages).
+    """
 
     def __init__(self, folder, model_name='model.sav', vectorizer_name='vectorizer.sav'):
+        """
+        :param folder: Folder path, where serialized models/vectorizers located
+        :param model_name: Name of serialized model file
+        :param vectorizer_name: Name of serialized vectorizer file
+        """
         self.last_prediction = None
         self.model_path = f'{folder}/{model_name}'
         self.vectorizer_path = f'{folder}/{vectorizer_name}'
@@ -17,6 +24,10 @@ class Analyzer:
         self.data_transformer = None
 
     def _load(self):
+        """
+        Deserialize and assign model, create new DataTransformer.
+        :return:
+        """
         if self.model is None:
             self.model = pickle.load(open(self.model_path, 'rb'))
         if self.data_transformer is None:
@@ -28,6 +39,11 @@ class Analyzer:
         predictions = self.model.predict_proba(text)
 
     def get_sentiment_analysis(self, texts: []) -> []:
+        """
+        Analyze sentiment from input.
+        :param texts: Input texts/messages
+        :return: Sentiment analysis output
+        """
         if self.model is None or self.data_transformer is None:
             self._load()
         data = pd.Series([clean_mentions(t) for t in texts])
@@ -46,6 +62,11 @@ class Analyzer:
 
     @staticmethod
     def _emoji_from_score(score):
+        """
+        Score to emoji converted
+        :param score: Input score
+        :return: Emoji based on score
+        """
         return '😀' if score > 0.85 else '😐' if score > 0.75 else '☹'
 
     #TODO: Needed?????
@@ -58,6 +79,15 @@ class Analyzer:
 
     def get_plot(self, plot_path=None, x_label='Date', y_label='Sentiment value', data2=pd.Series([-1, 0, 1])
                      , data3=pd.Series([-1, 0, 1])):
+        """
+
+        :param plot_path: Path, where final plot will be saved
+        :param x_label: Label of X axis of main plot. This parameter will be probably removed.
+        :param y_label: Label of Y axis of main plot. This parameter will be probably removed.
+        :param data2: Data for trend plot.
+        :param data3: Data for prediction plot
+        :return: Path where plot is saved. None if no plot was saved.
+        """
         if self.last_prediction is None:
             print('No predicitions done')
             return

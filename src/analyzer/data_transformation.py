@@ -3,6 +3,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 import pandas as pd
 import pickle
 
+
 class DataTransformer:
 
     def __init__(self, path):
