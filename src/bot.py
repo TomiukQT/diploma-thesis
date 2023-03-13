@@ -38,7 +38,7 @@ def message(payload):
     channel_id = event.get('channel')
     user_id = event.get('user')
     text = event.get('text')
-    return Response(), 200 # TMP
+    return Response(), 200  # TMP
     if user_id == BOT_ID:
         return
     client.chat_postMessage(channel=channel_id, text=f'{text} to you!')
@@ -72,7 +72,7 @@ def analyze():
     args = parse_args(args_text)
 
     history = load_channel_history(channel_id)
-    filtered_history = filter_history(history, args)
+    filtered_history = filter_history(history, channel_id, args)
     if len(filtered_history) <= 0:
         client.chat_postMessage(channel=channel_id, text='No data to analyze')
         return Response(), 200
@@ -122,7 +122,7 @@ def load_channel_history(channel_id: str) -> []:
     return []
 
 
-def filter_history(history: [], date_range=None) -> []:
+def filter_history(history: [], channel_id, date_range=None) -> []:
     """
     Filter history. Remove messages from bot and filter messages outside Date Range, if specified.
     :param history: History to be filtered
@@ -143,10 +143,44 @@ def filter_history(history: [], date_range=None) -> []:
                 date = datetime.fromtimestamp(stamp)
                 if _from > date or date > _to:
                     add = False
+
         # If not flagged append to filtered history
         if add:
             filtered.append(Message(msg['text'], msg['user'], msg['ts']))
+        thread_msg = extract_thread(msg, channel_id)
+        if len(thread_msg) > 0:
+            filtered.extend(thread_msg)
     return filtered
+
+
+def extract_thread(msg, channel_id):
+    """
+    Check if message is thread. If yes get all messages from thread.
+
+    :param channel_id: ID of channel
+    :param msg: Message to be checked
+    :return: List of all messages from thread (parent message excluded). Empty list if any error or message is not
+    thread.
+    !! RETURNS list of Message (from message.py) class wrappers, not raw message !!
+    """
+    if 'thread_ts' not in msg:
+        return []
+
+    thread_ts = msg['thread_ts']
+    try:
+        response = client.conversations_replies(channel=channel_id, ts=thread_ts)
+        thread_messages = response["messages"][1:]
+        while response['has_more']:
+            # sleep(1)
+            response = client.conversations_replies(channel=channel_id, ts=thread_ts, limit=200,
+                                                    cursor=response['response_metadata']['next_cursor'])
+            thread_messages = thread_messages + response["messages"]
+        # Print results
+        print(f'{len(thread_messages)} messages found in thread.')
+        return list(map(lambda m: Message(m['text'], m['user'], m['ts']), thread_messages))
+    except SlackApiError as e:
+        print("Error in loading threaded msgs.")
+    return []
 
 
 def parse_args(text: str) -> namedtuple:
