@@ -70,7 +70,8 @@ class Analyzer:
         return '😀' if score > 0.85 else '😐' if score > 0.75 else '☹'
 
     #TODO: Needed?????
-    def index_dates(self, data, dates):
+    @staticmethod
+    def index_dates(data, dates):
         date_time = pd.to_datetime(dates)
         df = pd.DataFrame()
         df['value'] = data
