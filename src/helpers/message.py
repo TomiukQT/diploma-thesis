@@ -17,3 +17,16 @@ class Message:
 
     def __repr__(self):
         return f'{self.date} >> {self.user}:: {self.text}'
+
+
+class Reaction:
+    """
+    Class wrapper around slack reactions
+    """
+
+    def __init__(self, name, count):
+        self.name = name
+        self.count = count
+
+    def __str__(self):
+        return f'{self.name} {self.count}x'
