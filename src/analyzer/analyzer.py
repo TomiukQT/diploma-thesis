@@ -117,7 +117,7 @@ class Analyzer:
         ax3.set_xlabel("Date")
         ax3.set_ylabel("Prediction")
         ax3.set_title("Prediction")
-        ax3.text(4, 0, ''.join(data["value"].apply(lambda x: self.emoji_from_score(x)))[0], fontsize=20)
+        #ax3.text(4, 0, self._emoji_from_score(data[-1]), fontsize=20)
 
         if plot_path is not None:
             plt.savefig(plot_path)

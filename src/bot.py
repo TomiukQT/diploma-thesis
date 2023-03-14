@@ -146,7 +146,7 @@ def filter_history(history: [], channel_id, date_range=None) -> []:
 
         # If not flagged append to filtered history
         if add:
-            filtered.append(Message(msg['text'], msg['user'], msg['ts'], get_reactions(msg, msg['ts'])))
+            filtered.append(Message(msg['text'], msg['user'], msg['ts'], get_reactions(msg, channel_id)))
         thread_msg = extract_thread(msg, channel_id)
         if len(thread_msg) > 0:
             filtered.extend(thread_msg)
@@ -189,8 +189,10 @@ def get_reactions(msg, channel_id) -> []:
         response = client.reactions_get(channel=channel_id, timestamp=msg['ts'], full=True)
         if msg['ok']:
             reactions = list(map(lambda r: Reaction(r['name'], int(r['count'])), response['message']['reactions']))
+            print(f'Get {len(reactions)} reactions')
     except Exception:
-        print('Fetching reactions failed')
+        #print('Fetching reactions failed')
+        pass
     return reactions
 
 
