@@ -6,17 +6,21 @@ class Message:
     Class wrapper around slack message.
     """
 
-    def __init__(self, text, user, timestamp):
+    def __init__(self, text: str, user: str, timestamp: str, reactions: [] = None):
         self.text = text
         self.user = user
         self.timestamp = timestamp
         self.date = datetime.fromtimestamp(float(timestamp.split('.')[0]))
+        if reactions is None:
+            self.reactions = []
+        else:
+            self.reactions = reactions.copy()
 
     def __str__(self):
-        return f'{self.date} >> {self.user}:: {self.text}'
+        return f'{self.date} >> {self.user}::{self.text}:: with {len(self.reactions)} reactions'
 
     def __repr__(self):
-        return f'{self.date} >> {self.user}:: {self.text}'
+        return f'{self.date} >> {self.user}::{self.text}\n Reactions: {self.reactions}'
 
 
 class Reaction:
