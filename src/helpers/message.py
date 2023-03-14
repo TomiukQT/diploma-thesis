@@ -28,7 +28,7 @@ class Reaction:
     Class wrapper around slack reactions
     """
 
-    def __init__(self, name, count):
+    def __init__(self, name: str, count: int):
         self.name = name
         self.count = count
 

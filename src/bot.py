@@ -5,7 +5,7 @@ import slack
 from flask import Flask, Response, request, stream_with_context
 from slack.errors import SlackApiError
 from slackeventsapi import SlackEventAdapter
-from helpers.message import Message
+from helpers.message import Message, Reaction
 from analyzer.analyzer import Analyzer
 from collections import namedtuple
 from datetime import datetime
@@ -146,7 +146,7 @@ def filter_history(history: [], channel_id, date_range=None) -> []:
 
         # If not flagged append to filtered history
         if add:
-            filtered.append(Message(msg['text'], msg['user'], msg['ts']))
+            filtered.append(Message(msg['text'], msg['user'], msg['ts'], get_reactions(msg, msg['ts'])))
         thread_msg = extract_thread(msg, channel_id)
         if len(thread_msg) > 0:
             filtered.extend(thread_msg)
@@ -181,6 +181,17 @@ def extract_thread(msg, channel_id):
     except SlackApiError as e:
         print("Error in loading threaded msgs.")
     return []
+
+
+def get_reactions(msg, channel_id) -> []:
+    reactions = []
+    try:
+        response = client.reactions_get(channel=channel_id, timestamp=msg['ts'], full=True)
+        if msg['ok']:
+            reactions = list(map(lambda r: Reaction(r['name'], int(r['count'])), response['message']['reactions']))
+    except Exception:
+        print('Fetching reactions failed')
+    return reactions
 
 
 def parse_args(text: str) -> namedtuple:
