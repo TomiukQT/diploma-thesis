@@ -2,6 +2,9 @@ from datetime import datetime
 
 
 class Message:
+    """
+    Class wrapper around slack message.
+    """
 
     def __init__(self, text, user, timestamp):
         self.text = text
