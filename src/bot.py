@@ -7,6 +7,7 @@ from slack.errors import SlackApiError
 from slackeventsapi import SlackEventAdapter
 from helpers.message import Message, Reaction
 from analyzer.analyzer import Analyzer
+from analyzer.time_analyzer import TimeSeriesAnalyzer
 from collections import namedtuple
 from datetime import datetime
 
@@ -19,6 +20,7 @@ slack_event_adapter = SlackEventAdapter(SIGNING_SECRET, '/slack/events', app)
 client = slack.WebClient(token=TOKEN)
 BOT_ID = client.api_call('auth.test')['user_id']
 analyzer = Analyzer('models', 'model.sav', 'vectorizer.sav')
+ts_analyzer = TimeSeriesAnalyzer()
 
 
 @slack_event_adapter.on('challenge')
@@ -79,8 +81,10 @@ def analyze():
     # Analyze messages
     sa = analyzer.get_sentiment_analysis([m.text for m in filtered_history])
     # Analyze SA
+    date_indexed_data = ts_analyzer.index_dates(sa, [m.date for m in filtered_history])
+    trend = ts_analyzer.extract_trend(date_indexed_data)
     # Print Graph
-    graph_path = analyzer.get_plot(plot_path='out/graphs/foo.png', )
+    graph_path = analyzer.get_plot(plot_path='out/graphs/foo.png', trend_data=trend)
 
     msg = f'Analysed {len(filtered_history)} messages: Min: {min(sa)} Max: {max(sa)} Mean: {np.mean(sa)}'
     #client.chat_postMessage(channel=channel_id, text=msg)

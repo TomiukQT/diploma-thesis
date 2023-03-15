@@ -78,15 +78,15 @@ class Analyzer:
         df = df.set_index(date_time)
         return df
 
-    def get_plot(self, plot_path=None, x_label='Date', y_label='Sentiment value', data2=pd.Series([-1, 0, 1])
-                     , data3=pd.Series([-1, 0, 1])):
+    def get_plot(self, plot_path=None, x_label='Date', y_label='Sentiment value', trend_data=pd.Series([-1, 0, 1])
+                 , predictions_data=pd.Series([-1, 0, 1])):
         """
 
         :param plot_path: Path, where final plot will be saved
         :param x_label: Label of X axis of main plot. This parameter will be probably removed.
         :param y_label: Label of Y axis of main plot. This parameter will be probably removed.
-        :param data2: Data for trend plot.
-        :param data3: Data for prediction plot
+        :param trend_data: Data for trend plot.
+        :param predictions_data: Data for prediction plot
         :return: Path where plot is saved. None if no plot was saved.
         """
         if self.last_prediction is None:
@@ -105,14 +105,14 @@ class Analyzer:
         ax1.set_title("Historical data")
 
         # Plot trend TODO
-        data2.plot(ax=ax2)
+        trend_data.plot(ax=ax2)
 
         ax2.set_xlabel("Date")
         ax2.set_ylabel("Trend")
         ax2.set_title("Current trend")
 
         # Plot prediction?
-        data3.plot(ax=ax3)
+        predictions_data.plot(ax=ax3)
 
         ax3.set_xlabel("Date")
         ax3.set_ylabel("Prediction")
