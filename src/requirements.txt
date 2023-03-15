@@ -35,3 +35,5 @@ Werkzeug==2.2.3
 yarl==1.8.2
 matplotlib==3.7.1
 matplotlib-inline==0.1.6
+patsy==0.5.3
+statsmodels==0.13.5
