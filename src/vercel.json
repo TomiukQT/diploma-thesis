@@ -3,7 +3,7 @@
     "builds": [
         {
             "src": "bot.py",
-            "use": "@liudonghua123/now-flask"
+            "use": "@vercel/python"
         }
     ],
     "routes": [
