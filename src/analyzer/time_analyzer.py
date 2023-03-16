@@ -6,7 +6,7 @@ It only works with cleaned data, max date_indexing will be applied??.
 import pandas as pd
 import statsmodels.api as sm
 
-
+"asdadf"
 class TimeSeriesAnalyzer:
 
     @staticmethod
