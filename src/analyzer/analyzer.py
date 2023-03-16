@@ -106,7 +106,7 @@ class Analyzer:
 
         # Plot trend TODO
         trend_data.plot(ax=ax2)
-
+        plt.gcf().autofmt_xdate()
         ax2.set_xlabel("Date")
         ax2.set_ylabel("Trend")
         ax2.set_title("Current trend")

@@ -19,7 +19,8 @@ class TimeSeriesAnalyzer:
         :param model: The decomposition model to use. 'additive' or 'multiplicative'.
         :return: Trend of time series
         """
-        data = data.asfreq('D')
+
+        data = data.resample('1d')['value'].agg('mean').fillna(0).asfreq('1D')
         # Create a decomposition object with the specified model
         decomposition = sm.tsa.seasonal_decompose(data, model=model)
 
@@ -30,10 +31,10 @@ class TimeSeriesAnalyzer:
             start_date = pd.to_datetime(start_date)
             trend = trend.loc[start_date:]
 
-        return trend
+        return trend.dropna()
 
     @staticmethod
-    def _parse_date(date_string):
+    def parse_date(date_string):
         """
 
         :param date_string: string to be parsed. You can use
@@ -45,7 +46,7 @@ class TimeSeriesAnalyzer:
          'this_year'
         :return: pd.Timestamp(0) if something is wrong else correct pd.Timestamp converted from human-usable date specification.
         """
-        ts = pd.Timestamp(date_string)
+        ts = pd.Timestamp.today()
         try:
             if date_string == 'last_week':
                 ts = pd.Timestamp.today() - pd.Timedelta(days=7)

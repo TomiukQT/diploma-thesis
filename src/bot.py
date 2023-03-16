@@ -68,7 +68,7 @@ def analyze():
 
     data = request.form
     # Load history
-    # print(data)
+    #print(data)
     channel_id = data.get('channel_id')
     args_text = data.get('text')
     args = parse_args(args_text)
@@ -82,7 +82,7 @@ def analyze():
     sa = analyzer.get_sentiment_analysis([m.text for m in filtered_history])
     # Analyze SA
     date_indexed_data = ts_analyzer.index_dates(sa, [m.date for m in filtered_history])
-    trend = ts_analyzer.extract_trend(date_indexed_data)
+    trend = ts_analyzer.extract_trend(date_indexed_data, start_date=ts_analyzer.parse_date('last_week'))
     # Print Graph
     graph_path = analyzer.get_plot(plot_path='out/graphs/foo.png', trend_data=trend)
 
