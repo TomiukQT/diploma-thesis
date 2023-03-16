@@ -11,5 +11,11 @@
 			"dest":"bot.py"
 		}
 
-	]
+	],
+
+    "functions": {
+		"bot.py": {
+			"memory": 1024
+		}
+	}
 }
