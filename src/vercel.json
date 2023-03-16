@@ -1,14 +1,10 @@
 {
-    "builds": [
-        {
-            "src": "bot.py",
-            "use": "@vercel/python"
+
+    "functions": {
+        "bot.py": {
+        "memory": 1024,
+        "runtime": "@vercel/python"
         }
-    ],
-    "routes": [
-        {
-            "src": "/(.*)",
-            "dest": "bot.py"
-        }
-    ]
+        
+        }         
 }
