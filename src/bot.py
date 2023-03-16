@@ -83,8 +83,11 @@ def analyze():
     # Analyze SA
     date_indexed_data = ts_analyzer.index_dates(sa, [m.date for m in filtered_history])
     trend = ts_analyzer.extract_trend(date_indexed_data, start_date=ts_analyzer.parse_date('last_week'))
+    # Predictions
+    prediction_data = ts_analyzer.get_predictions(date_indexed_data)
+
     # Print Graph
-    graph_path = analyzer.get_plot(plot_path='out/graphs/foo.png', trend_data=trend)
+    graph_path = analyzer.get_plot(plot_path='out/graphs/foo.png', trend_data=trend, predictions_data=prediction_data)
 
     msg = f'Analysed {len(filtered_history)} messages: Min: {min(sa)} Max: {max(sa)} Mean: {np.mean(sa)}'
     #client.chat_postMessage(channel=channel_id, text=msg)
