@@ -19,6 +19,7 @@ class TimeSeriesAnalyzer:
         :param model: The decomposition model to use. 'additive' or 'multiplicative'.
         :return: Trend of time series
         """
+        data = data.asfreq('D')
         # Create a decomposition object with the specified model
         decomposition = sm.tsa.seasonal_decompose(data, model=model)
 
