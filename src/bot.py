@@ -29,6 +29,7 @@ message_translator = MessageTranslator()
 
 daily_report_channels = {}
 
+
 @slack_event_adapter.on('challenge')
 def url_auth(payload):
     print(payload)
@@ -64,7 +65,7 @@ def message(payload):
             print(f"Got an error: {e.response['error']}")
 
 
-def channel_analysis(channel_id, args_text=''):
+def channel_analysis(channel_id: str, args_text: str = '') -> Response:
     args = parse_args(args_text)
 
     history = load_channel_history(channel_id)
@@ -78,7 +79,6 @@ def channel_analysis(channel_id, args_text=''):
     # Translate if needed
     message_translator.translate_messages(filtered_history)
 
-
     # Analyze messages
     sa = analyzer.get_sentiment_analysis([m.text for m in filtered_history])
     # Analyze SA
@@ -91,7 +91,7 @@ def channel_analysis(channel_id, args_text=''):
     graph_path = analyzer.get_plot(plot_path='out/graphs/foo.png', trend_data=trend, predictions_data=prediction_data)
 
     msg = f'Analysed {len(filtered_history)} messages: Min: {min(sa)} Max: {max(sa)} Mean: {np.mean(sa)}'
-    #client.chat_postMessage(channel=channel_id, text=msg)
+    # client.chat_postMessage(channel=channel_id, text=msg)
     try:
         response = client.files_upload(
             file=graph_path,
@@ -118,7 +118,7 @@ def analyze():
 
     data = request.form
     # Load history
-    #print(data)
+    # print(data)
     channel_id = data.get('channel_id')
     args_text = data.get('text')
     return channel_analysis(channel_id, args_text)
@@ -160,9 +160,10 @@ def load_channel_history(channel_id: str) -> []:
     return []
 
 
-def filter_history(history: [], channel_id, date_range=None) -> []:
+def filter_history(history: [], channel_id: str, date_range=None) -> []:
     """
     Filter history. Remove messages from bot and filter messages outside Date Range, if specified.
+    :param channel_id:
     :param history: History to be filtered
     :param date_range: Filter option Date Range
     :return:
@@ -191,7 +192,7 @@ def filter_history(history: [], channel_id, date_range=None) -> []:
     return filtered
 
 
-def extract_thread(msg, channel_id):
+def extract_thread(msg: {}, channel_id: str):
     """
     Check if message is thread. If yes get all messages from thread.
 
@@ -221,7 +222,7 @@ def extract_thread(msg, channel_id):
     return []
 
 
-def get_reactions(msg, channel_id) -> []:
+def get_reactions(msg: {}, channel_id: str) -> []:
     reactions = []
     try:
         response = client.reactions_get(channel=channel_id, timestamp=msg['ts'], full=True)
@@ -229,7 +230,7 @@ def get_reactions(msg, channel_id) -> []:
             reactions = list(map(lambda r: Reaction(r['name'], int(r['count'])), response['message']['reactions']))
             print(f'Get {len(reactions)} reactions')
     except Exception:
-        #print('Fetching reactions failed')
+        # print('Fetching reactions failed')
         pass
     return reactions
 

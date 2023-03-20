@@ -8,6 +8,7 @@ import statsmodels.api as sm
 import pmdarima as pm
 from statsmodels.tsa.arima.model import ARIMA
 
+
 class TimeSeriesAnalyzer:
 
     @staticmethod

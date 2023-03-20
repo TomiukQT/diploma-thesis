@@ -28,7 +28,7 @@ class DataUploader:
             # Initialize the saved creds
             self.gauth.Authorize()
 
-    def save_file(self, file, remove_after_upload=True):
+    def save_file(self, file, remove_after_upload: bool = True):
         gfile = self.drive.CreateFile({'parents': [{'id': '18104w-v_kKoYurCUrkJ_9_EgE6vjkVee'}]})
         # Read file and set it as the content of this instance.
         gfile.SetContentFile(file)
@@ -39,11 +39,11 @@ class DataUploader:
         if remove_after_upload:
             os.remove(file)
 
-    def messages_to_file(self, messages, file_name='new_file') -> str:
+    @staticmethod
+    def messages_to_file(messages: [], file_name='new_file') -> str:
         file_name += f'_{str(pd.Timestamp.now().timestamp())}.csv'
         file_name = file_name.strip()
         path = f'tmp/{file_name}'
-        #df = pd.DataFrame([m.__dict__ for m in messages])
         df = pd.DataFrame.from_records([vars(m) for m in messages], exclude=['reactions'])
         # Reaction to column
         df.insert(4, "reactions", [[(r.name, r.count) for r in m.reactions] for m in messages], True)
