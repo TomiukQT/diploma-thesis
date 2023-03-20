@@ -39,7 +39,7 @@ class DataUploader:
         if remove_after_upload:
             os.remove(file)
 
-    def messages_to_file(messages, file_name='new_file') -> str:
+    def messages_to_file(self, messages, file_name='new_file') -> str:
         file_name += f'_{str(pd.Timestamp.now().timestamp())}.csv'
         file_name = file_name.strip()
         path = f'tmp/{file_name}'
