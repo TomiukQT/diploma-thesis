@@ -124,6 +124,20 @@ def analyze():
     return channel_analysis(channel_id, args_text)
 
 
+@app.route('/daily_report', methods=['POST'])
+def subscribe_to_daily_report():
+    data = request.form
+    channel_id = data.get('channel_id')
+    if channel_id not in daily_report_channels.keys():
+        job = schedule.every().day.at("00:00").do(channel_analysis, channel_id=channel_id)
+        daily_report_channels[channel_id] = job
+        client.chat_postMessage(channel=channel_id, text=f'Successfully subscribe to daily analysis in #{channel_id}')
+    else:
+        schedule.cancel_job(daily_report_channels[channel_id])
+        daily_report_channels.pop(channel_id)
+        client.chat_postMessage(channel=channel_id, text=f'Successfully unsubscribe daily analysis.')
+
+
 def load_channel_history(channel_id: str) -> []:
     """
     Loads all historical messages in channel.
