@@ -4,6 +4,28 @@ import pandas as pd
 import pickle
 
 
+from googletrans import Translator
+from ..helpers.message import Message
+
+
+class MessageTranslator:
+
+    def __init__(self) -> None:
+        self.translator = Translator()
+
+    def translate_messages(self, messages: []) -> []:
+        translated_messages = messages.copy()
+        langs = [lang.lang for lang in self.translator.detect([msg.text for msg in messages])]
+        for i, lang in enumerate(langs):
+            if isinstance(lang, list):
+                lang = lang[0]
+            if lang != 'en':
+                m = messages[i]
+                translated = self.translator.translate(m.text, src=str(lang), dest='en')
+                translated_messages[i] = Message(translated.text, m.user, m.timestamp, m.reactions)
+        return translated_messages
+
+
 class DataTransformer:
 
     def __init__(self, path):

@@ -79,7 +79,7 @@ class Analyzer:
         return df
 
     def get_plot(self, plot_path=None, x_label='Date', y_label='Sentiment value', trend_data=pd.Series([-1, 0, 1])
-                 , predictions_data=pd.Series([-1, 0, 1])):
+                 , predictions_data=None):
         """
 
         :param plot_path: Path, where final plot will be saved
@@ -93,7 +93,7 @@ class Analyzer:
             print('No predicitions done')
             return
 
-        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(8, 2), width_ratios=[3, 1, 1], sharey=True)
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(8, 2), width_ratios=[3, 1, 3 ], sharey=True)
         fig.suptitle('Sentiment analysis', fontsize=14, y=1.1)
 
         data = pd.Series(self.last_prediction)
@@ -106,13 +106,21 @@ class Analyzer:
 
         # Plot trend TODO
         trend_data.plot(ax=ax2)
-
+        plt.gcf().autofmt_xdate()
         ax2.set_xlabel("Date")
         ax2.set_ylabel("Trend")
         ax2.set_title("Current trend")
 
         # Plot prediction?
-        predictions_data.plot(ax=ax3)
+        if predictions_data is None:
+            pd.Series([-1, 0, 1]).plot(ax=ax3)
+        predictions, original = predictions_data
+        predictions.predicted_mean.plot(label='predictions', ax=ax3)
+        ci = predictions.conf_int()
+        ci.plot(color='grey', ax=ax3)
+        original.plot(label='data', marker='.', ax=ax3)
+
+        plt.ylim(-1, 1)
 
         ax3.set_xlabel("Date")
         ax3.set_ylabel("Prediction")

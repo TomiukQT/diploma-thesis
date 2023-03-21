@@ -8,8 +8,11 @@ from slackeventsapi import SlackEventAdapter
 from helpers.message import Message, Reaction
 from analyzer.analyzer import Analyzer
 from analyzer.time_analyzer import TimeSeriesAnalyzer
+from analyzer.data_transformation import MessageTranslator
+from helpers.data_uploader import DataUploader
 from collections import namedtuple
 from datetime import datetime
+import schedule
 
 TOKEN = os.environ['SLACK_BOT_TOKEN']
 SIGNING_SECRET = os.environ['SLACK_BOT_SIGNING_SECRET']
@@ -21,7 +24,10 @@ client = slack.WebClient(token=TOKEN)
 BOT_ID = client.api_call('auth.test')['user_id']
 analyzer = Analyzer('models', 'model.sav', 'vectorizer.sav')
 ts_analyzer = TimeSeriesAnalyzer()
+data_uploader = DataUploader()
+message_translator = MessageTranslator()
 
+daily_report_channels = {}
 
 @slack_event_adapter.on('challenge')
 def url_auth(payload):
@@ -58,19 +64,7 @@ def message(payload):
             print(f"Got an error: {e.response['error']}")
 
 
-@app.route('/analyze', methods=['POST'])
-def analyze():
-    """
-    Slash command analyze. Function is loading and filtering history in channel, where the command was called. Then
-    filtered history is analyzed and finally, bot will send graphs to channel.
-    :return: Response
-    """
-
-    data = request.form
-    # Load history
-    # print(data)
-    channel_id = data.get('channel_id')
-    args_text = data.get('text')
+def channel_analysis(channel_id, args_text=''):
     args = parse_args(args_text)
 
     history = load_channel_history(channel_id)
@@ -78,13 +72,23 @@ def analyze():
     if len(filtered_history) <= 0:
         client.chat_postMessage(channel=channel_id, text='No data to analyze')
         return Response(), 200
+    # Save messages
+    data_uploader.save_file(data_uploader.messages_to_file(filtered_history))
+
+    # Translate if needed
+    message_translator.translate_messages(filtered_history)
+
+
     # Analyze messages
     sa = analyzer.get_sentiment_analysis([m.text for m in filtered_history])
     # Analyze SA
     date_indexed_data = ts_analyzer.index_dates(sa, [m.date for m in filtered_history])
-    trend = ts_analyzer.extract_trend(date_indexed_data)
+    trend = ts_analyzer.extract_trend(date_indexed_data, start_date=ts_analyzer.parse_date('last_week'))
+    # Predictions
+    prediction_data = ts_analyzer.get_predictions(date_indexed_data)
+
     # Print Graph
-    graph_path = analyzer.get_plot(plot_path='out/graphs/foo.png', trend_data=trend)
+    graph_path = analyzer.get_plot(plot_path='out/graphs/foo.png', trend_data=trend, predictions_data=prediction_data)
 
     msg = f'Analysed {len(filtered_history)} messages: Min: {min(sa)} Max: {max(sa)} Mean: {np.mean(sa)}'
     #client.chat_postMessage(channel=channel_id, text=msg)
@@ -102,6 +106,36 @@ def analyze():
         print(f"Got an error: {e.response['error']}")
         return Response(), 500
     return Response(), 200
+
+
+@app.route('/analyze', methods=['POST'])
+def analyze():
+    """
+    Slash command analyze. Function is loading and filtering history in channel, where the command was called. Then
+    filtered history is analyzed and finally, bot will send graphs to channel.
+    :return: Response
+    """
+
+    data = request.form
+    # Load history
+    #print(data)
+    channel_id = data.get('channel_id')
+    args_text = data.get('text')
+    return channel_analysis(channel_id, args_text)
+
+
+@app.route('/daily_report', methods=['POST'])
+def subscribe_to_daily_report():
+    data = request.form
+    channel_id = data.get('channel_id')
+    if channel_id not in daily_report_channels.keys():
+        job = schedule.every().day.at("00:00").do(channel_analysis, channel_id=channel_id)
+        daily_report_channels[channel_id] = job
+        client.chat_postMessage(channel=channel_id, text=f'Successfully subscribe to daily analysis in #{channel_id}')
+    else:
+        schedule.cancel_job(daily_report_channels[channel_id])
+        daily_report_channels.pop(channel_id)
+        client.chat_postMessage(channel=channel_id, text=f'Successfully unsubscribe daily analysis.')
 
 
 def load_channel_history(channel_id: str) -> []:
