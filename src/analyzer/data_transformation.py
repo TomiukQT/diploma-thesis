@@ -5,7 +5,10 @@ import pickle
 
 
 from googletrans import Translator
-from ..helpers.message import Message
+import sys
+sys.path.append("..")
+
+from helpers.message import Message
 
 
 class MessageTranslator:
