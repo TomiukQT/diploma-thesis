@@ -57,7 +57,7 @@ class TfidfDataTransformer(DataTransformer):
         DataTransformer.__init__(self, path)
 
     def vectorizer_fit(self, data: pd.Series):
-        self.vectorizer = TfidfVectorizer(max_features=1000)
+        self.vectorizer = TfidfVectorizer(max_features=2000, stop_words='english')
         self.vectorizer.fit(data)
 
     def transform(self, data: pd.Series, language: str = 'english'):
