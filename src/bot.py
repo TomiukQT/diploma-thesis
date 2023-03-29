@@ -22,7 +22,7 @@ slack_event_adapter = SlackEventAdapter(SIGNING_SECRET, '/slack/events', app)
 
 client = slack.WebClient(token=TOKEN)
 BOT_ID = client.api_call('auth.test')['user_id']
-analyzer = Analyzer('models', 'model.sav', 'vectorizer.sav')
+analyzer = Analyzer('models', 'LogisticRegression-class_weightNonen_jobs-1penaltynonesolvernewton-cholesky-bal-1680096073.552102.sav', 'vectorizer.sav')
 ts_analyzer = TimeSeriesAnalyzer()
 data_uploader = DataUploader()
 message_translator = MessageTranslator()
@@ -69,7 +69,7 @@ def channel_analysis(channel_id: str, args_text: str = '', user_args: str = None
     args = parse_args(args_text)
     user_id = parse_user_args(args_text)
     history = load_channel_history(channel_id)
-    filtered_history = filter_history(history, channel_id, date_range=args, user_id=user_id)
+    filtered_history = filter_history(history, channel_id, date_range=args, user=user_id)
     if len(filtered_history) <= 0:
         client.chat_postMessage(channel=channel_id, text='No data to analyze')
         return Response(), 200
@@ -197,6 +197,8 @@ def leaderboard():
 
 
 def parse_user_args(args_text: str):
+    if args_text is None or len(args_text) <= 0:
+        return None
     response = client.users_lookupByEmail(email=args_text)
     if response['ok']:
         return response['user']['id']

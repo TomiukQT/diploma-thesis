@@ -17,6 +17,7 @@ class Analyzer:
         :param model_name: Name of serialized model file
         :param vectorizer_name: Name of serialized vectorizer file
         """
+        self.last_results = None
         self.last_prediction = None
         self.model_path = f'{folder}/{model_name}'
         self.vectorizer_path = f'{folder}/{vectorizer_name}'
@@ -57,8 +58,9 @@ class Analyzer:
         #data = data[-data_len:]
         #print(data)
         predictions = self.model.predict_proba(data)
-        self.last_prediction = [x[0] for x in predictions]
-        return self.last_prediction
+        self.last_prediction = predictions
+        self.last_results = self.metrics()
+        return self.last_results
 
     @staticmethod
     def _emoji_from_score(score):
@@ -89,14 +91,14 @@ class Analyzer:
         :param predictions_data: Data for prediction plot
         :return: Path where plot is saved. None if no plot was saved.
         """
-        if self.last_prediction is None:
-            print('No predicitions done')
+        if self.last_results is None:
+            print('No predictions done')
             return
 
         fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(8, 2), width_ratios=[3, 1, 3 ], sharey=True)
         fig.suptitle('Sentiment analysis', fontsize=14, y=1.1)
 
-        data = pd.Series(self.last_prediction)
+        data = pd.Series(self.last_results)
         # Plot sentiment values
         data.plot(ax=ax1)
         plt.gcf().autofmt_xdate()
@@ -105,14 +107,17 @@ class Analyzer:
         ax1.set_title("Historical data")
 
         # Plot trend TODO
-        trend_data.plot(ax=ax2)
-        plt.gcf().autofmt_xdate()
-        ax2.set_xlabel("Date")
-        ax2.set_ylabel("Trend")
-        ax2.set_title("Current trend")
+        if len(trend_data) == 0:
+            plt.text(0.5, 0.5, "Hello World!", ax=ax2)
+        else:
+            trend_data.plot(ax=ax2)
+            plt.gcf().autofmt_xdate()
+            ax2.set_xlabel("Date")
+            ax2.set_ylabel("Trend")
+            ax2.set_title("Current trend")
 
         # Plot prediction?
-        if predictions_data is None:
+        if predictions_data is None or len(predictions_data) == 0:
             pd.Series([-1, 0, 1]).plot(ax=ax3)
         predictions, original = predictions_data
         predictions.predicted_mean.plot(label='predictions', ax=ax3)
@@ -130,3 +135,14 @@ class Analyzer:
         if plot_path is not None:
             plt.savefig(plot_path)
         return plot_path
+
+    def metrics(self):
+        """
+        Calculate metrics for prediction.
+        :return: Metric
+        """
+        if self.last_prediction is None:
+            print('No predictions done')
+            return
+        return list(map(lambda x: (x - 0.5) * 2, self.last_prediction[:, 0]))
+

@@ -8,9 +8,9 @@ import pandas as pd
 class DataUploader:
 
     def __init__(self) -> None:
-        self.auth = GoogleAuth()
+        self.gauth = GoogleAuth()
         self.setup_auth()
-        self.drive = GoogleDrive(self.auth)
+        self.drive = GoogleDrive(self.gauth)
 
     def setup_auth(self):
         # Try to load saved client credentials
