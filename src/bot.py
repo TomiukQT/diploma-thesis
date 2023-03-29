@@ -65,11 +65,11 @@ def message(payload):
             print(f"Got an error: {e.response['error']}")
 
 
-def channel_analysis(channel_id: str, args_text: str = '') -> Response:
+def channel_analysis(channel_id: str, args_text: str = '', user_args: str = None) -> Response:
     args = parse_args(args_text)
-
+    user_id = parse_user_args(args_text)
     history = load_channel_history(channel_id)
-    filtered_history = filter_history(history, channel_id, args)
+    filtered_history = filter_history(history, channel_id, date_range=args, user_id=user_id)
     if len(filtered_history) <= 0:
         client.chat_postMessage(channel=channel_id, text='No data to analyze')
         return Response(), 200
@@ -138,6 +138,71 @@ def subscribe_to_daily_report():
         client.chat_postMessage(channel=channel_id, text=f'Successfully unsubscribe daily analysis.')
 
 
+
+@app.route('/user_analysis', methods=['POST'])
+def user_analysis():
+    """
+    Slash command analyze. Function is loading and filtering history in channel, where the command was called. Then
+    filtered history is analyzed and finally, bot will send graphs to channel.
+    :return: Response
+    """
+
+    data = request.form
+    channel_id = data.get('channel_id')
+    args_text = data.get('text')
+    # Convert name to slack id
+    return channel_analysis(channel_id, args_text, args_text)
+
+
+# New function which will create leaderboard of users chatting in channel based on sentiment analysis
+@app.route('/leaderboard', methods=['POST'])
+def leaderboard():
+    """
+    Slash command analyze. Function is loading and filtering history in channel, where the command was called. Then
+    filtered history is analyzed and finally, bot will send graphs to channel.
+    :return: Response
+    """
+
+    data = request.form
+    channel_id = data.get('channel_id')
+    args_text = data.get('text')
+    # Convert name to slack id
+    args = parse_args(args_text)
+    # Load channel history
+    history = load_channel_history(channel_id)
+    filtered_history = filter_history(history, channel_id, date_range=args)
+    messages_by_user = {}
+    if filtered_history is None or len(filtered_history) <= 0:
+        client.chat_postMessage(channel=channel_id, text='No data to analyze')
+        return Response(), 200
+    
+    for msg in filtered_history:
+        if msg.user not in messages_by_user:
+            messages_by_user[msg.user] = []
+        messages_by_user[msg.user].append(msg.text)
+    sa = {}
+    for user in messages_by_user:
+        sa[user] = analyzer.get_sentiment_analysis(messages_by_user[user])
+    sa = {k: v for k, v in sorted(sa.items(), key=lambda item: item[1])}
+    # post message to channel with leaderboard but include only top and bottom 3
+    if len(sa) <= 6:
+        client.chat_postMessage(channel=channel_id, text=f'Leaderboard: {sa}')
+        return Response(), 200
+    top = {k: sa[k] for k in list(sa)[:3]}
+    bottom = {k: sa[k] for k in list(sa)[-3:]}
+    client.chat_postMessage(channel=channel_id, text=f'Top 3 users: {top}')
+    client.chat_postMessage(channel=channel_id, text=f'Bottom 3 users: {bottom}')
+
+    return Response(), 200
+
+
+def parse_user_args(args_text: str):
+    response = client.users_lookupByEmail(email=args_text)
+    if response['ok']:
+        return response['user']['id']
+    return None
+
+
 def load_channel_history(channel_id: str) -> []:
     """
     Loads all historical messages in channel.
@@ -160,12 +225,13 @@ def load_channel_history(channel_id: str) -> []:
     return []
 
 
-def filter_history(history: [], channel_id: str, date_range=None) -> []:
+def filter_history(history: [], channel_id: str, date_range=None, user=None) -> []:
     """
     Filter history. Remove messages from bot and filter messages outside Date Range, if specified.
-    :param channel_id:
+    :param channel_id: Channel ID
     :param history: History to be filtered
     :param date_range: Filter option Date Range
+    :param user: Filter option User
     :return:
     """
     filtered = []
@@ -182,6 +248,11 @@ def filter_history(history: [], channel_id: str, date_range=None) -> []:
                 date = datetime.fromtimestamp(stamp)
                 if _from > date or date > _to:
                     add = False
+        # Flag if message is not from specified user, if user arg was passed
+        if user is not None:
+            if msg['user'] != user:
+                add = False
+
 
         # If not flagged append to filtered history
         if add:
