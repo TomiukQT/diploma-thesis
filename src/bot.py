@@ -1,5 +1,7 @@
 import json
 import os
+import statistics
+
 import numpy as np
 import slack
 from flask import Flask, Response, request, stream_with_context
@@ -22,7 +24,7 @@ slack_event_adapter = SlackEventAdapter(SIGNING_SECRET, '/slack/events', app)
 
 client = slack.WebClient(token=TOKEN)
 BOT_ID = client.api_call('auth.test')['user_id']
-analyzer = Analyzer('models', 'LogisticRegression-class_weightNonen_jobs-1penaltynonesolvernewton-cholesky-bal-1680096073.552102.sav', 'vectorizer.sav')
+analyzer = Analyzer('models', 'old/model_new.sav', 'vectorizer.sav')
 ts_analyzer = TimeSeriesAnalyzer()
 data_uploader = DataUploader()
 message_translator = MessageTranslator()
@@ -67,7 +69,7 @@ def message(payload):
 
 def channel_analysis(channel_id: str, args_text: str = '', user_args: str = None) -> Response:
     args = parse_args(args_text)
-    user_id = parse_user_args(args_text)
+    user_id = parse_user_args(user_args)
     history = load_channel_history(channel_id)
     filtered_history = filter_history(history, channel_id, date_range=args, user=user_id)
     if len(filtered_history) <= 0:
@@ -83,7 +85,7 @@ def channel_analysis(channel_id: str, args_text: str = '', user_args: str = None
     sa = analyzer.get_sentiment_analysis([m.text for m in filtered_history])
     # Analyze SA
     date_indexed_data = ts_analyzer.index_dates(sa, [m.date for m in filtered_history])
-    trend = ts_analyzer.extract_trend(date_indexed_data, start_date=ts_analyzer.parse_date('last_week'))
+    trend = ts_analyzer.extract_trend(date_indexed_data) #start_date=ts_analyzer.parse_date('last_week')
     # Predictions
     prediction_data = ts_analyzer.get_predictions(date_indexed_data)
 
@@ -118,7 +120,7 @@ def analyze():
 
     data = request.form
     # Load history
-    # print(data)
+    #   print(data)
     channel_id = data.get('channel_id')
     args_text = data.get('text')
     return channel_analysis(channel_id, args_text)
@@ -151,7 +153,7 @@ def user_analysis():
     channel_id = data.get('channel_id')
     args_text = data.get('text')
     # Convert name to slack id
-    return channel_analysis(channel_id, args_text, args_text)
+    return channel_analysis(channel_id, '', args_text)
 
 
 # New function which will create leaderboard of users chatting in channel based on sentiment analysis
@@ -182,7 +184,7 @@ def leaderboard():
         messages_by_user[msg.user].append(msg.text)
     sa = {}
     for user in messages_by_user:
-        sa[user] = analyzer.get_sentiment_analysis(messages_by_user[user])
+        sa[user] = statistics.mean(analyzer.get_sentiment_analysis(messages_by_user[user]))
     sa = {k: v for k, v in sorted(sa.items(), key=lambda item: item[1])}
     # post message to channel with leaderboard but include only top and bottom 3
     if len(sa) <= 6:
@@ -340,4 +342,4 @@ def parse_args(text: str) -> namedtuple:
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5002)

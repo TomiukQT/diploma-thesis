@@ -36,12 +36,12 @@ class TimeSeriesAnalyzer:
         return trend.dropna()
 
     @staticmethod
-    def get_predictions(data, end_date='2023-03-31'):
+    def get_predictions(data, end_date='2023-04-14'):
         data = data.resample('1d')['value'].agg('mean').fillna(0).asfreq('1D')
         stepwise_fit = pm.auto_arima(data, start_p=0, start_q=0,
                                      max_p=4, max_q=4, m=1,
                                      start_P=0, seasonal=False,
-                                     d=0,
+                                     d=1,
                                      information_criterion='aic',
                                      stepwise=True)
         model = ARIMA(data, order=stepwise_fit.order, trend='n')

@@ -1,4 +1,6 @@
 import pickle
+import statistics
+
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -45,18 +47,12 @@ class Analyzer:
         :param texts: Input texts/messages
         :return: Sentiment analysis output
         """
+        #
         if self.model is None or self.data_transformer is None:
             self._load()
         data = pd.Series([clean_mentions(t) for t in texts])
         data = self.data_transformer.stemming(data)
-        #data_len = len(data)
-        #tr_data = pd.read_csv('models/model_data.csv')
-        #tr_data.dropna(inplace=True)
-        #tr_data = pd.concat([tr_data['clean_tweet'], data])
-        #print(data)
         data = self.data_transformer.transform(data)
-        #data = data[-data_len:]
-        #print(data)
         predictions = self.model.predict_proba(data)
         self.last_prediction = predictions
         self.last_results = self.metrics()
@@ -95,7 +91,7 @@ class Analyzer:
             print('No predictions done')
             return
 
-        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(8, 2), width_ratios=[3, 1, 3 ], sharey=True)
+        fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(8, 2), width_ratios=[3, 1, 3, 1 ], sharey=True)
         fig.suptitle('Sentiment analysis', fontsize=14, y=1.1)
 
         data = pd.Series(self.last_results)
@@ -108,7 +104,7 @@ class Analyzer:
 
         # Plot trend TODO
         if len(trend_data) == 0:
-            plt.text(0.5, 0.5, "Hello World!", ax=ax2)
+            ax2.text(0.5, 0.5, "No data", fontsize=20)
         else:
             trend_data.plot(ax=ax2)
             plt.gcf().autofmt_xdate()
@@ -130,7 +126,8 @@ class Analyzer:
         ax3.set_xlabel("Date")
         ax3.set_ylabel("Prediction")
         ax3.set_title("Prediction")
-        #ax3.text(4, 0, self._emoji_from_score(data[-1]), fontsize=20)
+
+        ax4.text(0, 0, self._emoji_from_score(statistics.mean(self.last_results)), fontsize=20)
 
         if plot_path is not None:
             plt.savefig(plot_path)
