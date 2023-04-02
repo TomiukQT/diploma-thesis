@@ -2,17 +2,19 @@ import json
 import os
 import statistics
 
+from collections import namedtuple
 import numpy as np
 import slack
 from flask import Flask, Response, request, stream_with_context
 from slack.errors import SlackApiError
 from slackeventsapi import SlackEventAdapter
 from helpers.message import Message, Reaction
+from helpers.argparser import parse_args, data_range_from_args
 from analyzer.analyzer import Analyzer
 from analyzer.time_analyzer import TimeSeriesAnalyzer
 from analyzer.data_transformation import MessageTranslator
 from helpers.data_uploader import DataUploader
-from collections import namedtuple
+
 from datetime import datetime
 import schedule
 
@@ -37,41 +39,11 @@ def url_auth(payload):
     print(payload)
 
 
-@slack_event_adapter.on('message')
-def message(payload):
-    """
-    TEST EVENT
-    TODO: TO BE REMOVED PROBABLY
-    :param payload:
-    :return:
-    """
-    event = payload.get('event', {})
-    channel_id = event.get('channel')
-    user_id = event.get('user')
-    text = event.get('text')
-    return Response(), 200  # TMP
-    if user_id == BOT_ID:
-        return
-    client.chat_postMessage(channel=channel_id, text=f'{text} to you!')
-    if text == "image":
-        try:
-            response = client.files_upload(
-                file='F:\Obrázky\image.png',
-                initial_comment='This is a sample Image',
-                channels=channel_id)
-        except SlackApiError as e:
-            # You will get a SlackApiError if "ok" is False
-            assert e.response["ok"] is False
-            # str like 'invalid_auth', 'channel_not_found'
-            assert e.response["error"]
-            print(f"Got an error: {e.response['error']}")
-
-
-def channel_analysis(channel_id: str, args_text: str = '', user_args: str = None) -> Response:
-    args = parse_args(args_text)
-    user_id = parse_user_args(user_args)
+def channel_analysis(channel_id: str, args: {}) -> Response:
+    user_id = args['user']
+    date_range = data_range_from_args(args)
     history = load_channel_history(channel_id)
-    filtered_history = filter_history(history, channel_id, date_range=args, user=user_id)
+    filtered_history = filter_history(history, channel_id, date_range=date_range, user=user_id)
     if len(filtered_history) <= 0:
         client.chat_postMessage(channel=channel_id, text='No data to analyze')
         return Response(), 200
@@ -82,7 +54,7 @@ def channel_analysis(channel_id: str, args_text: str = '', user_args: str = None
     message_translator.translate_messages(filtered_history)
 
     # Analyze messages
-    sa = analyzer.get_sentiment_analysis([m.text for m in filtered_history])
+    sa = analyzer.get_sentiment_analysis(filtered_history)
     # Analyze SA
     date_indexed_data = ts_analyzer.index_dates(sa, [m.date for m in filtered_history])
     trend = ts_analyzer.extract_trend(date_indexed_data) #start_date=ts_analyzer.parse_date('last_week')
@@ -119,12 +91,27 @@ def analyze():
     """
 
     data = request.form
-    # Load history
-    #   print(data)
     channel_id = data.get('channel_id')
     args_text = data.get('text')
-    return channel_analysis(channel_id, args_text)
+    return channel_analysis(channel_id, parse_args(args_text, client))
 
+
+@app.route('/analyze_channel', methods=['POST'])
+def analyze_channel():
+    """
+    Slash command analyze. Function is loading and filtering history in channel, where the command was called. Then
+    filtered history is analyzed and finally, bot will send graphs to channel.
+    :return: Response
+    """
+
+    data = request.form
+    channel_id = data.get('channel_id')
+    args_text = data.get('text')
+    args = parse_args(args_text, client)
+    if args['channel'] is None:
+        client.chat_postMessage(channel=channel_id, text='No channel specified')
+        return Response(), 200
+    return channel_analysis(args['channel'], args)
 
 @app.route('/daily_report', methods=['POST'])
 def subscribe_to_daily_report():
@@ -152,8 +139,9 @@ def user_analysis():
     data = request.form
     channel_id = data.get('channel_id')
     args_text = data.get('text')
+    args = parse_args(args_text)
     # Convert name to slack id
-    return channel_analysis(channel_id, '', args_text)
+    return channel_analysis(channel_id, args)
 
 
 # New function which will create leaderboard of users chatting in channel based on sentiment analysis
@@ -170,9 +158,10 @@ def leaderboard():
     args_text = data.get('text')
     # Convert name to slack id
     args = parse_args(args_text)
+    date_range = data_range_from_args(args)
     # Load channel history
     history = load_channel_history(channel_id)
-    filtered_history = filter_history(history, channel_id, date_range=args)
+    filtered_history = filter_history(history, channel_id, date_range=date_range)
     messages_by_user = {}
     if filtered_history is None or len(filtered_history) <= 0:
         client.chat_postMessage(channel=channel_id, text='No data to analyze')
@@ -181,7 +170,7 @@ def leaderboard():
     for msg in filtered_history:
         if msg.user not in messages_by_user:
             messages_by_user[msg.user] = []
-        messages_by_user[msg.user].append(msg.text)
+        messages_by_user[msg.user].append(msg)
     sa = {}
     for user in messages_by_user:
         sa[user] = statistics.mean(analyzer.get_sentiment_analysis(messages_by_user[user]))
@@ -196,15 +185,6 @@ def leaderboard():
     client.chat_postMessage(channel=channel_id, text=f'Bottom 3 users: {bottom}')
 
     return Response(), 200
-
-
-def parse_user_args(args_text: str):
-    if args_text is None or len(args_text) <= 0:
-        return None
-    response = client.users_lookupByEmail(email=args_text)
-    if response['ok']:
-        return response['user']['id']
-    return None
 
 
 def load_channel_history(channel_id: str) -> []:
@@ -310,35 +290,7 @@ def get_reactions(msg: {}, channel_id: str) -> []:
     return reactions
 
 
-def parse_args(text: str) -> namedtuple:
-    """
-    Parse arguments from text wrote after analyze command. Date Range is always correct or empty.
-    :param text: Arg text
-    :return: Date Range parsed from text
-    """
-    # Definition of named tuple to make DateRange simplier to use
-    date_range = namedtuple("DateRange", ["date_from", "date_to"])
-    try:
-        split = text.split(' ')
-        # If no args were given, return empty DateRange
-        if len(split) == 0:
-            return date_range(None, None)
-        # Parse one or two dates
-        if len(split) == 1:
-            datetime_from = datetime.strptime(split[0], '%d/%m/%Y')
-            return date_range(datetime_from, datetime.today())
-        else:
-            datetime_from = datetime.strptime(split[0], '%d/%m/%Y')
-            datetime_to = datetime.strptime(split[1], '%d/%m/%Y')
-            delta = datetime_to - datetime_from
-            # If dates were flipped, flip them to make correct DateRange
-            if delta.days < 0:
-                return date_range(datetime_to, datetime_from)
-            return date_range(datetime_from, datetime_to)
-    # If anything fails, return empty DateRange
-    except Exception:
-        print('Bad format of args.')
-        return date_range(None, None)
+
 
 
 if __name__ == '__main__':

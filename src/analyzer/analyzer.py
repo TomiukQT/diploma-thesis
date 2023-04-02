@@ -1,5 +1,6 @@
 import pickle
 import statistics
+import json
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -39,24 +40,49 @@ class Analyzer:
     def analyze_sentence(self, text) -> (float, float):
         if self.model is None or self.data_transformer is None:
             self._load()
-        predictions = self.model.predict_proba(text)
+        data = pd.Series([clean_mentions(text)])
+        data = self.data_transformer.stemming(data)
+        data = self.data_transformer.transform(data)
+        predictions = self.model.predict_proba(data)
 
-    def get_sentiment_analysis(self, texts: []) -> []:
+    def get_sentiment_analysis(self, messages: []) -> []:
         """
         Analyze sentiment from input.
-        :param texts: Input texts/messages
+        :param messages: Input texts/messages
         :return: Sentiment analysis output
         """
         #
         if self.model is None or self.data_transformer is None:
             self._load()
+        texts = [m.text for m in messages]
+        reactions = [m.reactions for m in messages]
+
         data = pd.Series([clean_mentions(t) for t in texts])
         data = self.data_transformer.stemming(data)
         data = self.data_transformer.transform(data)
         predictions = self.model.predict_proba(data)
         self.last_prediction = predictions
+        self.last_reactions = self.evaluate_reactions(reactions)
         self.last_results = self.metrics()
+
         return self.last_results
+
+    def evaluate_reactions(self, reactions_data: []):
+        results = []
+        reactions_cfg = json.load(open('reactions_cfg.json'))
+        for reactions in reactions_data:
+            if reactions is None:
+                results.append(0)
+            else:
+                score = 0
+                total_weight = sum([r.count for r in reactions])
+                for reaction in reactions:
+                    if reaction in reactions_cfg:
+                        score += reactions_cfg[reaction] * reaction.count / total_weight
+                    else:
+                        score += self.analyze_sentence(reaction) * reaction.count / total_weight
+                results.append(score)
+        return results
 
     @staticmethod
     def _emoji_from_score(score):
@@ -133,7 +159,7 @@ class Analyzer:
             plt.savefig(plot_path)
         return plot_path
 
-    def metrics(self):
+    def metrics(self, reaction_weight=0.2):
         """
         Calculate metrics for prediction.
         :return: Metric
@@ -141,5 +167,6 @@ class Analyzer:
         if self.last_prediction is None:
             print('No predictions done')
             return
-        return list(map(lambda x: (x - 0.5) * 2, self.last_prediction[:, 0]))
-
+        prediction_weight = 1 - reaction_weight
+        normalized_prediction = list(map(lambda x: (x - 0.5) * 2, self.last_prediction[:, 0]))
+        return list(map(lambda x, y: x * prediction_weight + y * reaction_weight, normalized_prediction, self.last_reactions))
