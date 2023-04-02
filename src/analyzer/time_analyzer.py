@@ -24,10 +24,13 @@ class TimeSeriesAnalyzer:
 
         data = data.resample('1d')['value'].agg('mean').fillna(0).asfreq('1D')
         # Create a decomposition object with the specified model
-        decomposition = sm.tsa.seasonal_decompose(data, model=model)
-
-        # Extract the trend component from the decomposition object
-        trend = decomposition.trend
+        try:
+            decomposition = sm.tsa.seasonal_decompose(data, model=model)
+            # Extract the trend component from the decomposition object
+            trend = decomposition.trend
+        except Exception:
+            print('Error while extracting trend')
+            return None
 
         if start_date is not None:
             start_date = pd.to_datetime(start_date)
@@ -41,7 +44,7 @@ class TimeSeriesAnalyzer:
         stepwise_fit = pm.auto_arima(data, start_p=0, start_q=0,
                                      max_p=4, max_q=4, m=1,
                                      start_P=0, seasonal=False,
-                                     d=1,
+                                     d=0,
                                      information_criterion='aic',
                                      stepwise=True)
         model = ARIMA(data, order=stepwise_fit.order, trend='n')

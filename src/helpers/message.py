@@ -14,7 +14,7 @@ class Message:
         if reactions is None:
             self.reactions = []
         else:
-            self.reactions = reactions.copy()
+            self.reactions = reactions[:]
 
     def __str__(self):
         return f'{self.date} >> {self.user}::{self.text}:: with {len(self.reactions)} reactions'

@@ -20,6 +20,7 @@ class Analyzer:
         :param model_name: Name of serialized model file
         :param vectorizer_name: Name of serialized vectorizer file
         """
+        self.last_reactions = None
         self.last_results = None
         self.last_prediction = None
         self.model_path = f'{folder}/{model_name}'
@@ -44,6 +45,7 @@ class Analyzer:
         data = self.data_transformer.stemming(data)
         data = self.data_transformer.transform(data)
         predictions = self.model.predict_proba(data)
+        return predictions[0][0]
 
     def get_sentiment_analysis(self, messages: []) -> []:
         """
@@ -77,10 +79,10 @@ class Analyzer:
                 score = 0
                 total_weight = sum([r.count for r in reactions])
                 for reaction in reactions:
-                    if reaction in reactions_cfg:
-                        score += reactions_cfg[reaction] * reaction.count / total_weight
+                    if reaction.name in reactions_cfg:
+                        score += reactions_cfg[reaction.name] * reaction.count / total_weight
                     else:
-                        score += self.analyze_sentence(reaction) * reaction.count / total_weight
+                        score += self.analyze_sentence(reaction.name) * reaction.count / total_weight
                 results.append(score)
         return results
 
@@ -117,7 +119,7 @@ class Analyzer:
             print('No predictions done')
             return
 
-        fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(8, 2), width_ratios=[3, 1, 3, 1 ], sharey=True)
+        fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(6, 18), sharey=True)
         fig.suptitle('Sentiment analysis', fontsize=14, y=1.1)
 
         data = pd.Series(self.last_results)
@@ -154,17 +156,20 @@ class Analyzer:
         ax3.set_title("Prediction")
 
         ax4.text(0, 0, self._emoji_from_score(statistics.mean(self.last_results)), fontsize=20)
+        ax4.axis('off')
 
         if plot_path is not None:
             plt.savefig(plot_path)
         return plot_path
 
-    def metrics(self, reaction_weight=0.2):
+    def metrics(self, reaction_weight=0.2, data=None):
         """
         Calculate metrics for prediction.
         :return: Metric
         """
-        if self.last_prediction is None:
+        if data is None:
+            data = self.last_prediction
+        if data is None:
             print('No predictions done')
             return
         prediction_weight = 1 - reaction_weight
