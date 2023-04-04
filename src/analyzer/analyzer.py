@@ -104,7 +104,7 @@ class Analyzer:
         df = df.set_index(date_time)
         return df
 
-    def get_plot(self, plot_path=None, x_label='Date', y_label='Sentiment value', trend_data=pd.Series([-1, 0, 1])
+    def get_plot(self, plot_path=None, trend_data=pd.Series([-1, 0, 1])
                  , predictions_data=None):
         """
 
@@ -118,49 +118,61 @@ class Analyzer:
         if self.last_results is None:
             print('No predictions done')
             return
-
-        fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(6, 18), sharey=True)
-        fig.suptitle('Sentiment analysis', fontsize=14, y=1.1)
-
-        data = pd.Series(self.last_results)
-        # Plot sentiment values
-        data.plot(ax=ax1)
-        plt.gcf().autofmt_xdate()
-        ax1.set_xlabel(x_label)
-        ax1.set_ylabel(y_label)
-        ax1.set_title("Historical data")
-
-        # Plot trend TODO
-        if len(trend_data) == 0:
-            ax2.text(0.5, 0.5, "No data", fontsize=20)
-        else:
-            trend_data.plot(ax=ax2)
-            plt.gcf().autofmt_xdate()
-            ax2.set_xlabel("Date")
-            ax2.set_ylabel("Trend")
-            ax2.set_title("Current trend")
-
-        # Plot prediction?
-        if predictions_data is None or len(predictions_data) == 0:
-            pd.Series([-1, 0, 1]).plot(ax=ax3)
-        predictions, original = predictions_data
-        predictions.predicted_mean.plot(label='predictions', ax=ax3)
-        ci = predictions.conf_int()
-        ci.plot(color='grey', ax=ax3)
-        original.plot(label='data', marker='.', ax=ax3)
-
+        data = self.last_results.resample('D').mean().fillna(0)
+        figsize = (5, 3)
+        plt.style.use('seaborn-v0_8-whitegrid')
+        # SENTIMENT
+        fig, ax = plt.subplots(figsize=figsize)
         plt.ylim(-1, 1)
+        data.plot(ax=ax, label='Sentiment', marker='.')
 
-        ax3.set_xlabel("Date")
-        ax3.set_ylabel("Prediction")
-        ax3.set_title("Prediction")
+        # Labels
+        ax.set_xlabel('Date')
+        ax.set_ylabel('Sentiment')
+        ax.set_title("Historical data")
+        plot_path1 = self.__save__plot(plt, plot_path, 3)
+        # TREND
+        fig, ax = plt.subplots(figsize=figsize)
+        if len(trend_data) == 0:
+            ax.text(0.5, 0.5, "No data", fontsize=20)
+        else:
+            pd.Series(trend_data).plot(ax=ax)
+            ax.set_xlabel("Date")
+            ax.set_ylabel("Trend")
+            ax.set_title("Current trend")
+        plot_path2 = self.__save__plot(plt, plot_path, 2)
 
-        ax4.text(0, 0, self._emoji_from_score(statistics.mean(self.last_results)), fontsize=20)
-        ax4.axis('off')
 
+        # PREDICTIONS
+        fig, ax = plt.subplots(figsize=figsize)
+        plt.ylim(-1, 1)
+        if predictions_data is None or len(predictions_data) == 0:
+            pd.Series([-1, 0, 1]).plot(ax=ax)
+
+        data_len = len(data)
+
+        predictions, original = predictions_data
+        predictions.predicted_mean[data_len-1:].plot(label='predictions', marker='.', ax=ax)
+        ci = predictions.conf_int()
+        ci[data_len-1:].plot(color='grey', ax=ax)
+        original[-2:].plot(label='orig_data', marker='.', ax=ax)
+        plt.legend()
+
+        ax.set_xlabel("Date")
+        ax.set_ylabel("Prediction")
+        ax.set_title("Prediction")
+        ax.set_ylim(-1, 1)
+
+        plot_path3 = self.__save__plot(plt, plot_path, 3)
+        return plot_path1, plot_path2, plot_path3
+
+    @staticmethod
+    def __save__plot(_plt_, plot_path, i):
         if plot_path is not None:
-            plt.savefig(plot_path)
-        return plot_path
+            path = plot_path + str(i) + '.png'
+            _plt_.savefig(path)
+        return path
+
 
     def metrics(self, reaction_weight=0.2, data=None):
         """

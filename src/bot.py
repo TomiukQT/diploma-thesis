@@ -40,7 +40,7 @@ def url_auth(payload):
 
 
 def channel_analysis(channel_id: str, args: {}) -> Response:
-    user_id = args['user']
+    user_id = args.get('user')
     date_range = data_range_from_args(args)
     history = load_channel_history(channel_id)
     filtered_history = filter_history(history, channel_id, date_range=date_range, user=user_id)
@@ -62,15 +62,18 @@ def channel_analysis(channel_id: str, args: {}) -> Response:
     prediction_data = ts_analyzer.get_predictions(date_indexed_data)
 
     # Print Graph
-    graph_path = analyzer.get_plot(plot_path='out/graphs/foo.png', trend_data=trend, predictions_data=prediction_data)
+    graph_path1, graph_path2, graph_path3 = analyzer.get_plot(plot_path='out/graphs/out_graph', trend_data=trend, predictions_data=prediction_data)
 
-    msg = f'Analysed {len(filtered_history)} messages: Min: {min(sa)} Max: {max(sa)} Mean: {np.mean(sa)}'
+    msgs = [f'Analysed {len(filtered_history)} messages: Min: {min(sa)} Max: {max(sa)} Mean: {np.mean(sa)}',
+            f'Trend: {trend}',
+            f'Predictions: {prediction_data.trend}']
     # client.chat_postMessage(channel=channel_id, text=msg)
     try:
-        response = client.files_upload(
-            file=graph_path,
-            initial_comment=msg,
-            channels=channel_id)
+        for graph_path, msg in zip([graph_path1, graph_path2, graph_path3], msgs):
+            response = client.files_upload(
+                file=graph_path,
+                initial_comment=msg,
+                channels=channel_id)
         return Response(), 200
     except SlackApiError as e:
         # You will get a SlackApiError if "ok" is False

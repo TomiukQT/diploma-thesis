@@ -7,6 +7,7 @@ import pandas as pd
 import statsmodels.api as sm
 import pmdarima as pm
 from statsmodels.tsa.arima.model import ARIMA
+from datetime import datetime
 
 
 class TimeSeriesAnalyzer:
@@ -47,9 +48,9 @@ class TimeSeriesAnalyzer:
                                      d=0,
                                      information_criterion='aic',
                                      stepwise=True)
-        model = ARIMA(data, order=stepwise_fit.order, trend='n')
+        model = ARIMA(data, order=stepwise_fit.order, trend='c')
         model = model.fit()
-        predictions = model.get_prediction(end=end_date)
+        predictions = model.get_prediction(end=data[-1:].index[0] + pd.Timedelta(days=10), dynamic=False)
         return predictions, data
 
     @staticmethod
