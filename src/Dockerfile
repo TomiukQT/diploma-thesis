@@ -5,6 +5,6 @@ WORKDIR /app
 COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
-COPY . .
+COPY .. .
 
-CMD [ "python3", "-m" , "flask", "--app", "src/bot.py", "run", "--host=0.0.0.0"]
+CMD [ "python3", "-m" , "flask", "--app", "bot.py", "run", "--host=0.0.0.0"]
