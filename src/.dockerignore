@@ -128,3 +128,6 @@ site
 
 # Pyre type checker
 **\.pyre
+
+**\Notebooks\
+**\.git
