@@ -20,6 +20,7 @@ class Analyzer:
         :param model_name: Name of serialized model file
         :param vectorizer_name: Name of serialized vectorizer file
         """
+        self.last_date_results = None
         self.last_reactions = None
         self.last_results = None
         self.last_prediction = None
@@ -62,10 +63,11 @@ class Analyzer:
         data = pd.Series([clean_mentions(t) for t in texts])
         data = self.data_transformer.stemming(data)
         data = self.data_transformer.transform(data)
-        predictions = self.model.predict_proba(data)
+        predictions = self.model.predict(data)
         self.last_prediction = predictions
         self.last_reactions = self.evaluate_reactions(reactions)
         self.last_results = self.metrics()
+        self.last_date_results = self.index_dates(self.last_results, [m.date.date() for m in messages])
 
         return self.last_results
 
@@ -118,7 +120,8 @@ class Analyzer:
         if self.last_results is None:
             print('No predictions done')
             return
-        data = self.last_results.resample('D').mean().fillna(0)
+        data = self.last_date_results.resample('D').mean().fillna(0)
+        #data = pd.Series(self.last_results)
         figsize = (5, 3)
         plt.style.use('seaborn-v0_8-whitegrid')
         # SENTIMENT
@@ -130,7 +133,7 @@ class Analyzer:
         ax.set_xlabel('Date')
         ax.set_ylabel('Sentiment')
         ax.set_title("Historical data")
-        plot_path1 = self.__save__plot(plt, plot_path, 3)
+        plot_path1 = self.__save__plot(plt, plot_path, 1)
         # TREND
         fig, ax = plt.subplots(figsize=figsize)
         if len(trend_data) == 0:
@@ -185,5 +188,5 @@ class Analyzer:
             print('No predictions done')
             return
         prediction_weight = 1 - reaction_weight
-        normalized_prediction = list(map(lambda x: (x - 0.5) * 2, self.last_prediction[:, 0]))
+        normalized_prediction = list(map(lambda x: (x - 0.5) * 2, self.last_prediction))
         return list(map(lambda x, y: x * prediction_weight + y * reaction_weight, normalized_prediction, self.last_reactions))

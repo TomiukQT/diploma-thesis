@@ -26,7 +26,7 @@ slack_event_adapter = SlackEventAdapter(SIGNING_SECRET, '/slack/events', app)
 
 client = slack.WebClient(token=TOKEN)
 BOT_ID = client.api_call('auth.test')['user_id']
-analyzer = Analyzer('models', 'final/model.sav', 'vectorizer.sav')
+analyzer = Analyzer('models', 'final/SVR.sav', 'final/vectorizer.sav')
 ts_analyzer = TimeSeriesAnalyzer()
 data_uploader = DataUploader()
 message_translator = MessageTranslator()
@@ -39,13 +39,16 @@ def url_auth(payload):
     print(payload)
 
 
-def channel_analysis(channel_id: str, args: {}) -> Response:
+def channel_analysis(channel_id: str, args: {}, output_channel=None) -> Response:
     user_id = args.get('user')
     date_range = data_range_from_args(args)
+    if output_channel is None:
+        output_channel = channel_id
+
     history = load_channel_history(channel_id)
     filtered_history = filter_history(history, channel_id, date_range=date_range, user=user_id)
     if len(filtered_history) <= 0:
-        client.chat_postMessage(channel=channel_id, text='No data to analyze')
+        client.chat_postMessage(channel=output_channel, text='No data to analyze')
         return Response(), 200
     # Save messages
     data_uploader.save_file(data_uploader.messages_to_file(filtered_history))
@@ -65,15 +68,15 @@ def channel_analysis(channel_id: str, args: {}) -> Response:
     graph_path1, graph_path2, graph_path3 = analyzer.get_plot(plot_path='out/graphs/out_graph', trend_data=trend, predictions_data=prediction_data)
 
     msgs = [f'Analysed {len(filtered_history)} messages: Min: {min(sa)} Max: {max(sa)} Mean: {np.mean(sa)}',
-            f'Trend: {trend}',
-            f'Predictions: {prediction_data.trend}']
+            f'Trend: {np.mean(trend)}',
+            f'Predictions']
     # client.chat_postMessage(channel=channel_id, text=msg)
     try:
         for graph_path, msg in zip([graph_path1, graph_path2, graph_path3], msgs):
             response = client.files_upload(
                 file=graph_path,
                 initial_comment=msg,
-                channels=channel_id)
+                channels=output_channel)
         return Response(), 200
     except SlackApiError as e:
         # You will get a SlackApiError if "ok" is False
@@ -111,10 +114,10 @@ def analyze_channel():
     channel_id = data.get('channel_id')
     args_text = data.get('text')
     args = parse_args(args_text, client)
-    if args['channel'] is None:
+    if args.get('channel') is None:
         client.chat_postMessage(channel=channel_id, text='No channel specified')
         return Response(), 200
-    return channel_analysis(args['channel'], args)
+    return channel_analysis(args['channel'], args, output_channel=channel_id)
 
 @app.route('/daily_report', methods=['POST'])
 def subscribe_to_daily_report():
@@ -144,7 +147,7 @@ def user_analysis():
     args_text = data.get('text')
     args = parse_args(args_text)
     # Convert name to slack id
-    return channel_analysis(channel_id, args)
+    return channel_analysis(channel_id, args, output_channel=channel_id)
 
 
 # New function which will create leaderboard of users chatting in channel based on sentiment analysis
@@ -160,7 +163,7 @@ def leaderboard():
     channel_id = data.get('channel_id')
     args_text = data.get('text')
     # Convert name to slack id
-    args = parse_args(args_text)
+    args = parse_args(args_text, client)
     date_range = data_range_from_args(args)
     # Load channel history
     history = load_channel_history(channel_id)

@@ -12,7 +12,7 @@ def parse_args(args: str, client) -> dict:
     response = {}
     split = args.split(' ')
     # If no args were given, return empty args dict
-    if len(split) <= 1:
+    if len(split) < 1 or split[0] == '':
         return response
     # Parse one or two dates
     for s in split:
