@@ -7,6 +7,8 @@ import pandas as pd
 import statsmodels.api as sm
 import pmdarima as pm
 from statsmodels.tsa.arima.model import ARIMA
+from datetime import datetime
+
 
 class TimeSeriesAnalyzer:
 
@@ -23,10 +25,13 @@ class TimeSeriesAnalyzer:
 
         data = data.resample('1d')['value'].agg('mean').fillna(0).asfreq('1D')
         # Create a decomposition object with the specified model
-        decomposition = sm.tsa.seasonal_decompose(data, model=model)
-
-        # Extract the trend component from the decomposition object
-        trend = decomposition.trend
+        try:
+            decomposition = sm.tsa.seasonal_decompose(data, model=model)
+            # Extract the trend component from the decomposition object
+            trend = decomposition.trend
+        except Exception:
+            print('Error while extracting trend')
+            return None
 
         if start_date is not None:
             start_date = pd.to_datetime(start_date)
@@ -35,17 +40,17 @@ class TimeSeriesAnalyzer:
         return trend.dropna()
 
     @staticmethod
-    def get_predictions(data, end_date='2023-03-31'):
+    def get_predictions(data, end_date='2023-04-14'):
         data = data.resample('1d')['value'].agg('mean').fillna(0).asfreq('1D')
-        stepwise_fit = pm.auto_arima(data, start_p=1, start_q=1,
-                                     max_p=5, max_q=5, m=1,
+        stepwise_fit = pm.auto_arima(data, start_p=0, start_q=0,
+                                     max_p=4, max_q=4, m=1,
                                      start_P=0, seasonal=False,
-                                     d=1,
+                                     d=0,
                                      information_criterion='aic',
                                      stepwise=True)
-        model = ARIMA(data, order=stepwise_fit.order, trend='n')
+        model = ARIMA(data, order=stepwise_fit.order, trend='c')
         model = model.fit()
-        predictions = model.get_prediction(end=end_date)
+        predictions = model.get_prediction(end=data[-1:].index[0] + pd.Timedelta(days=10), dynamic=False)
         return predictions, data
 
     @staticmethod

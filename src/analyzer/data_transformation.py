@@ -5,7 +5,10 @@ import pickle
 
 
 from googletrans import Translator
-from ..helpers.message import Message
+import sys
+sys.path.append("..")
+
+from helpers.message import Message
 
 
 class MessageTranslator:
@@ -28,10 +31,13 @@ class MessageTranslator:
 
 class DataTransformer:
 
-    def __init__(self, path):
+    def __init__(self, path, vectorizer=None):
         self.stemmer = PorterStemmer()
         if path is not None:
             self.vectorizer = pickle.load(open(f'{path}', 'rb'))
+        elif vectorizer is not None:
+            self.vectorizer = vectorizer
+
 
     def stemming(self, data: pd.Series):
         tokenized = data.apply(lambda x: x.split())
@@ -50,11 +56,12 @@ class DataTransformer:
 
 class TfidfDataTransformer(DataTransformer):
 
-    def __init__(self, path=None):
-        DataTransformer.__init__(self, path)
+    def __init__(self, path=None, vectorizer=None):
+        DataTransformer.__init__(self, path, vectorizer)
 
     def vectorizer_fit(self, data: pd.Series):
-        self.vectorizer = TfidfVectorizer(max_features=1000)
+        if self.vectorizer is None:
+            self.vectorizer = TfidfVectorizer(max_features=2000, stop_words='english')
         self.vectorizer.fit(data)
 
     def transform(self, data: pd.Series, language: str = 'english'):
@@ -64,12 +71,12 @@ class TfidfDataTransformer(DataTransformer):
 
 class BagOfWordsTransformer(DataTransformer):
 
-    def __init__(self, path=None, lang='english'):
-        DataTransformer.__init__(self, path)
-        self.lang = lang
+    def __init__(self, path=None, vectorizer=None):
+        DataTransformer.__init__(self, path, vectorizer)
 
     def vectorizer_fit(self, data: pd.Series):
-        self.vectorizer = CountVectorizer(max_df=0.90, min_df=2, max_features=1000, stop_words=self.lang)
+        if self.vectorizer is None:
+            self.vectorizer = CountVectorizer(max_df=0.90, min_df=2, max_features=2000, stop_words='english')
         self.vectorizer.fit(data)
 
     def transform(self, data: pd.Series, language: str = 'english'):
