@@ -46,7 +46,7 @@ def channel_analysis(channel_id: str, args: {}, output_channel=None) -> Response
     if output_channel is None:
         output_channel = channel_id
 
-    history = load_channel_history(channel_id, date_range=date_range)
+    history = load_channel_history(channel_id)
     filtered_history = filter_history(history, channel_id, date_range=date_range, user=user_id)
     if len(filtered_history) <= 0:
         client.chat_postMessage(channel=output_channel, text='No data to analyze')
@@ -176,7 +176,7 @@ def leaderboard():
         channel_id = args['channel']
     date_range = data_range_from_args(args)
     # Load channel history
-    history = load_channel_history(channel_id, date_range=date_range)
+    history = load_channel_history(channel_id)
     filtered_history = filter_history(history, channel_id, date_range=date_range)
     messages_by_user = {}
     if filtered_history is None or len(filtered_history) <= 0:
