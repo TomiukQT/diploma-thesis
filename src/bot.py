@@ -206,6 +206,7 @@ def leaderboard():
 def load_channel_history(channel_id: str, date_range=None) -> []:
     """
     Loads all historical messages in channel.
+    :param date_range: Date range to pre-filter messages
     :param channel_id: Target Channel ID
     :return: Channel history of messages
     """
@@ -217,17 +218,13 @@ def load_channel_history(channel_id: str, date_range=None) -> []:
 
     try:
         response = client.conversations_history(channel=channel_id,
-                                                limit=200,
-                                                oldest=_from.timestamp(),
-                                                latest=_to.timestamp())
+                                                limit=200)
         history = response["messages"]
-        while response['has_more']:
+        while response['has_more'] and history[-1]['ts'] > _from.timestamp():
             time.sleep(1)
             response = client.conversations_history(channel=channel_id,
                                                     limit=200,
-                                                    cursor=response['response_metadata']['next_cursor'],
-                                                    oldest=_from.timestamp(),
-                                                    latest=_to.timestamp())
+                                                    cursor=response['response_metadata']['next_cursor'])
             history = history + response["messages"]
         # Print results
         print(f'{len(history)} messages found')
