@@ -1,6 +1,7 @@
 import json
 import os
 import statistics
+import time
 
 from collections import namedtuple
 import numpy as np
@@ -146,9 +147,11 @@ def user_analysis():
     data = request.form
     channel_id = data.get('channel_id')
     args_text = data.get('text')
-    args = parse_args(args_text)
+    args = parse_args(args_text, client)
     # Convert name to slack id
-    return channel_analysis(channel_id, args, output_channel=channel_id)
+    if args.get('channel') is None:
+        return channel_analysis(channel_id, args, output_channel=channel_id)
+    return channel_analysis(args['channel'], args, output_channel=channel_id)
 
 
 # New function which will create leaderboard of users chatting in channel based on sentiment analysis
@@ -161,17 +164,23 @@ def leaderboard():
     """
 
     data = request.form
+    output_channel = data.get('channel_id')
     channel_id = data.get('channel_id')
     args_text = data.get('text')
     # Convert name to slack id
     args = parse_args(args_text, client)
+
+    if args.get('channel') is None:
+        channel_id = output_channel
+    else:
+        channel_id = args['channel']
     date_range = data_range_from_args(args)
     # Load channel history
     history = load_channel_history(channel_id)
     filtered_history = filter_history(history, channel_id, date_range=date_range)
     messages_by_user = {}
     if filtered_history is None or len(filtered_history) <= 0:
-        client.chat_postMessage(channel=channel_id, text='No data to analyze')
+        client.chat_postMessage(channel=output_channel, text=f'No data to analyze in channel: {channel_id}')
         return Response(), 200
     
     for msg in filtered_history:
@@ -184,29 +193,41 @@ def leaderboard():
     sa = {k: v for k, v in sorted(sa.items(), key=lambda item: item[1])}
     # post message to channel with leaderboard but include only top and bottom 3
     if len(sa) <= 6:
-        client.chat_postMessage(channel=channel_id, text=f'Leaderboard: {sa}')
+        client.chat_postMessage(channel=output_channel, text=f'Leaderboard: {sa}')
         return Response(), 200
     top = {k: sa[k] for k in list(sa)[:3]}
     bottom = {k: sa[k] for k in list(sa)[-3:]}
-    client.chat_postMessage(channel=channel_id, text=f'Top 3 users: {top}')
-    client.chat_postMessage(channel=channel_id, text=f'Bottom 3 users: {bottom}')
+    client.chat_postMessage(channel=output_channel, text=f'Top 3 users: {top}')
+    client.chat_postMessage(channel=output_channel, text=f'Bottom 3 users: {bottom}')
 
     return Response(), 200
 
 
-def load_channel_history(channel_id: str) -> []:
+def load_channel_history(channel_id: str, date_range=None) -> []:
     """
     Loads all historical messages in channel.
     :param channel_id: Target Channel ID
     :return: Channel history of messages
     """
+    if date_range is not None:
+        _from, _to = date_range
+    else:
+        _from = datetime.datetime(1970, 1, 1)
+        _to = datetime.datetime.now()
+
     try:
-        response = client.conversations_history(channel=channel_id, limit=200)
+        response = client.conversations_history(channel=channel_id,
+                                                limit=200,
+                                                oldest=_from.timestamp(),
+                                                latest=_to.timestamp())
         history = response["messages"]
         while response['has_more']:
-            # sleep(1)
-            response = client.conversations_history(channel=channel_id, limit=200,
-                                                    cursor=response['response_metadata']['next_cursor'])
+            time.sleep(1)
+            response = client.conversations_history(channel=channel_id,
+                                                    limit=200,
+                                                    cursor=response['response_metadata']['next_cursor'],
+                                                    oldest=_from.timestamp(),
+                                                    latest=_to.timestamp())
             history = history + response["messages"]
         # Print results
         print(f'{len(history)} messages found')
@@ -295,9 +316,6 @@ def get_reactions(msg: {}, channel_id: str) -> []:
         # print('Fetching reactions failed')
         pass
     return reactions
-
-
-
 
 
 if __name__ == '__main__':

@@ -44,7 +44,7 @@ class DataUploader:
     def messages_to_file(messages: [], file_name='new_file') -> str:
         file_name += f'_{str(pd.Timestamp.now().timestamp())}.csv'
         file_name = file_name.strip()
-        path = f'{file_name}'
+        path = f'tmp/{file_name}'
         df = pd.DataFrame.from_records([vars(m) for m in messages], exclude=['reactions'])
         # Reaction to column
         df.insert(4, "reactions", [[(r.name, r.count) for r in m.reactions] for m in messages], True)
