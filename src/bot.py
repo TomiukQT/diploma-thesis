@@ -46,7 +46,7 @@ def channel_analysis(channel_id: str, args: {}, output_channel=None) -> Response
     if output_channel is None:
         output_channel = channel_id
 
-    history = load_channel_history(channel_id)
+    history = load_channel_history(channel_id, date_range=date_range)
     filtered_history = filter_history(history, channel_id, date_range=date_range, user=user_id)
     if len(filtered_history) <= 0:
         client.chat_postMessage(channel=output_channel, text='No data to analyze')
@@ -176,7 +176,7 @@ def leaderboard():
         channel_id = args['channel']
     date_range = data_range_from_args(args)
     # Load channel history
-    history = load_channel_history(channel_id)
+    history = load_channel_history(channel_id, date_range=date_range)
     filtered_history = filter_history(history, channel_id, date_range=date_range)
     messages_by_user = {}
     if filtered_history is None or len(filtered_history) <= 0:
@@ -203,25 +203,20 @@ def leaderboard():
     return Response(), 200
 
 
-def load_channel_history(channel_id: str, date_range=None) -> []:
+def load_channel_history(channel_id: str) -> []:
     """
     Loads all historical messages in channel.
     :param date_range: Date range to pre-filter messages
     :param channel_id: Target Channel ID
     :return: Channel history of messages
     """
-    if date_range is not None:
-        _from, _to = date_range
-    else:
-        _from = datetime.fromtimestamp(0)
-        _to = datetime.now()
 
     try:
         response = client.conversations_history(channel=channel_id,
                                                 limit=200)
         history = response["messages"]
-        while response['has_more'] and history[-1]['ts'] > _from.timestamp():
-            time.sleep(1)
+        while response['has_more']:
+            time.sleep(.25)
             response = client.conversations_history(channel=channel_id,
                                                     limit=200,
                                                     cursor=response['response_metadata']['next_cursor'])
@@ -230,7 +225,7 @@ def load_channel_history(channel_id: str, date_range=None) -> []:
         print(f'{len(history)} messages found')
         return history
     except SlackApiError as e:
-        print("Error creating conversation: {}")
+        print(f"Error creating conversation: {e}")
     return []
 
 
