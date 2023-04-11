@@ -51,7 +51,8 @@ def channel_analysis(channel_id: str, args: {}, output_channel=None) -> Response
         client.chat_postMessage(channel=output_channel, text='No data to analyze')
         return Response(), 200
     # Save messages
-    data_uploader.save_file(data_uploader.messages_to_file(filtered_history))
+    data_uploader.messages_to_file(filtered_history)
+    #data_uploader.save_file()
 
     # Translate if needed
     message_translator.translate_messages(filtered_history)
@@ -300,4 +301,4 @@ def get_reactions(msg: {}, channel_id: str) -> []:
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5002)
+    app.run(debug=True, port=5000, host='0.0.0.0')

@@ -8,15 +8,16 @@ import pandas as pd
 class DataUploader:
 
     def __init__(self) -> None:
-        self.gauth = GoogleAuth()
-        self.setup_auth()
-        self.drive = GoogleDrive(self.gauth)
+        pass
+        #self.gauth = GoogleAuth()
+        #self.setup_auth()
+        #self.drive = GoogleDrive(self.gauth)
 
     def setup_auth(self):
         # Try to load saved client credentials
-        #credentials = json.loads(os.open('creds.json', os.O_RDONLY))
-        #with open('creds.json', 'w') as fp:
-            #json.dump(credentials, fp)
+        credentials = json.loads(os.environ.get('GOOGLE_CREDENTIALS'))
+        with open('creds.json', 'w') as fp:
+            json.dump(credentials, fp)
         self.gauth.LoadCredentialsFile("creds.json")
         if self.gauth.credentials is None:
             # Authenticate if they're not there
