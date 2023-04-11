@@ -212,8 +212,8 @@ def load_channel_history(channel_id: str, date_range=None) -> []:
     if date_range is not None:
         _from, _to = date_range
     else:
-        _from = datetime.datetime(1970, 1, 1)
-        _to = datetime.datetime.now()
+        _from = datetime.fromtimestamp(0)
+        _to = datetime.now()
 
     try:
         response = client.conversations_history(channel=channel_id,
