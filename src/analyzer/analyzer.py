@@ -136,7 +136,7 @@ class Analyzer:
         plot_path1 = self.__save__plot(plt, plot_path, 1)
         # TREND
         fig, ax = plt.subplots(figsize=figsize)
-        if len(trend_data) == 0:
+        if trend_data is None or len(trend_data) == 0:
             ax.text(0.5, 0.5, "No data", fontsize=20)
         else:
             pd.Series(trend_data).plot(ax=ax)

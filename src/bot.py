@@ -70,7 +70,7 @@ def channel_analysis(channel_id: str, args: {}, output_channel=None) -> Response
     graph_path1, graph_path2, graph_path3 = analyzer.get_plot(plot_path='out/graphs/out_graph', trend_data=trend, predictions_data=prediction_data)
 
     msgs = [f'Analysed {len(filtered_history)} messages: Min: {min(sa)} Max: {max(sa)} Mean: {np.mean(sa)}',
-            f'Trend: {np.mean(trend)}',
+            f'Trend',
             f'Predictions']
     # client.chat_postMessage(channel=channel_id, text=msg)
     try:

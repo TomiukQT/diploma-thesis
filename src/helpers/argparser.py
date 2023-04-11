@@ -23,7 +23,7 @@ def parse_args(args: str, client) -> dict:
             response[arg_name] = parse_date_args(arg_value)
         else:
             response[arg_name] = arg_value
-        return response
+    return response
 
 
 def parse_user_args(args_text: str, client):
@@ -55,7 +55,7 @@ def data_range_from_args(args: {}) -> namedtuple:
     date_from = args.get('date_from')
     date_to = args.get('date_to')
     if date_from is None and date_to is None:
-        return date_range(None, None)
+        return date_range(datetime.strptime('01/01/1970', '%d/%m/%Y'),  datetime.today())
     if date_from is None:
         return date_range(datetime.strptime('01/01/1970', '%d/%m/%Y'), date_to)
     if date_to is None:
