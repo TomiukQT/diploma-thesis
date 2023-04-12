@@ -39,14 +39,23 @@ class Analyzer:
         if self.data_transformer is None:
             self.data_transformer = TfidfDataTransformer(self.vectorizer_path)
 
+    def _is_proba_model(self):
+        method = getattr(self.model, 'predict_proba', None)
+        return callable(method)
+
     def analyze_sentence(self, text) -> (float, float):
         if self.model is None or self.data_transformer is None:
             self._load()
         data = pd.Series([clean_mentions(text)])
         data = self.data_transformer.stemming(data)
         data = self.data_transformer.transform(data)
-        predictions = self.model.predict_proba(data)
-        return predictions[0][0]
+
+        if self._is_proba_model():
+            predictions = self.model.predict_proba(data)
+            return predictions[0][0]
+        else:
+            predictions = self.model.predict(data)
+            return predictions[0]
 
     def get_sentiment_analysis(self, messages: []) -> []:
         """
@@ -63,7 +72,10 @@ class Analyzer:
         data = pd.Series([clean_mentions(t) for t in texts])
         data = self.data_transformer.stemming(data)
         data = self.data_transformer.transform(data)
-        predictions = self.model.predict(data)
+        if self._is_proba_model():
+            predictions = self.model.predict_proba(data)
+        else:
+            predictions = self.model.predict(data)
         self.last_prediction = predictions
         self.last_reactions = self.evaluate_reactions(reactions)
         self.last_results = self.metrics()
@@ -176,7 +188,6 @@ class Analyzer:
             _plt_.savefig(path)
         return path
 
-
     def metrics(self, reaction_weight=0.2, data=None):
         """
         Calculate metrics for prediction.
@@ -188,5 +199,8 @@ class Analyzer:
             print('No predictions done')
             return
         prediction_weight = 1 - reaction_weight
-        normalized_prediction = list(map(lambda x: (x - 0.5) * 2, self.last_prediction))
+        if self._is_proba_model():
+            normalized_prediction = list(map(lambda x: (x - 0.5) * 2, self.last_prediction[:, 0]))
+        else:
+            normalized_prediction = list(map(lambda x: ((1-x) - 0.5) * 2, self.last_prediction))
         return list(map(lambda x, y: x * prediction_weight + y * reaction_weight, normalized_prediction, self.last_reactions))
