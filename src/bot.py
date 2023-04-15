@@ -22,6 +22,7 @@ import schedule
 TOKEN = os.environ['SLACK_BOT_TOKEN']
 SIGNING_SECRET = os.environ['SLACK_BOT_SIGNING_SECRET']
 
+
 app = Flask(__name__)
 slack_event_adapter = SlackEventAdapter(SIGNING_SECRET, '/slack/events', app)
 
@@ -238,33 +239,21 @@ def filter_history(history: [], channel_id: str, date_range=None, user=None) -> 
     :param user: Filter option User
     :return:
     """
-    filtered = []
-    for msg in history:
-        add = True
-        # Flag if message is from bot
-        if msg['user'] == BOT_ID:
-            add = False
-        # Flag if message is not in specified date range, if date range arg was passed
-        if date_range is not None:
-            _from, _to = date_range
-            if _from is not None and _to is not None:
-                stamp = round(float(msg['ts']))
-                date = datetime.fromtimestamp(stamp)
-                if _from > date or date > _to:
-                    add = False
-        # Flag if message is not from specified user, if user arg was passed
-        if user is not None:
-            if msg['user'] != user:
-                add = False
+    filtered = [m for m in history if m['user'] != BOT_ID]
+    if date_range is not None:
+        _from, _to = date_range
+        if _from is not None and _to is not None:
+            filtered = [m for m in filtered if _from <= datetime.fromtimestamp(round(float(m['ts']))) <= _to]
+    if user is not None:
+        filtered = [m for m in filtered if m['user'] == user]
 
 
-        # If not flagged append to filtered history
-        if add:
-            filtered.append(Message(msg['text'], msg['user'], msg['ts'], get_reactions(msg, channel_id)))
-        thread_msg = extract_thread(msg, channel_id)
-        if len(thread_msg) > 0:
-            filtered.extend(thread_msg)
-    return filtered
+    threads = []
+    # Check if message is thread
+    thread_messages = [threads.extend(extract_thread(msg, channel_id)) for msg in history if 'thread_ts' in msg]
+    normal_messages = [Message(msg['text'], msg['user'], msg['ts'], get_reactions(msg, channel_id)) for msg in filtered]
+
+    return normal_messages + threads
 
 
 def extract_thread(msg: {}, channel_id: str):
