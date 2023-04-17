@@ -254,7 +254,7 @@ def filter_history(history: [], channel_id: str, date_range=None, user=None) -> 
 
     threads = []
     # Check if message is thread
-    thread_messages = [threads.extend(extract_thread(msg, channel_id)) for msg in history if 'thread_ts' in msg]
+    [threads.extend(extract_thread(msg, channel_id)) for msg in filtered if 'thread_ts' in msg]
     normal_messages = [Message(msg['text'], msg['user'], msg['ts'], get_reactions(msg, channel_id)) for msg in filtered]
 
     return normal_messages + threads
@@ -272,7 +272,7 @@ def extract_thread(msg: {}, channel_id: str):
     """
     if 'thread_ts' not in msg:
         return []
-
+    time.sleep(.25)
     thread_ts = msg['thread_ts']
     try:
         response = client.conversations_replies(channel=channel_id, ts=thread_ts)
