@@ -160,7 +160,7 @@ class Analyzer:
 
         # PREDICTIONS
         fig, ax = plt.subplots(figsize=figsize)
-        if predictions_data is None or len(predictions_data) == 0:
+        if predictions_data is None:
             ax.text(0.5, 0.5, "No data", fontsize=20)
         else:
             plt.ylim(-1, 1)
