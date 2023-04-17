@@ -57,7 +57,7 @@ def channel_analysis(channel_id: str, args: {}, output_channel=None) -> Response
     #data_uploader.save_file()
 
     # Translate if needed
-    message_translator.translate_messages(filtered_history)
+    filtered_history = message_translator.translate_messages(filtered_history)
 
     # Analyze messages
     sa = analyzer.get_sentiment_analysis(filtered_history)
@@ -65,7 +65,7 @@ def channel_analysis(channel_id: str, args: {}, output_channel=None) -> Response
     date_indexed_data = ts_analyzer.index_dates(sa, [m.date for m in filtered_history])
     trend = ts_analyzer.extract_trend(date_indexed_data) #start_date=ts_analyzer.parse_date('last_week')
     # Predictions
-    prediction_data, _resampled_data = ts_analyzer.get_predictions(date_indexed_data)
+    prediction_data = ts_analyzer.get_predictions(date_indexed_data)
 
     # Print Graph
     graph_path1, graph_path2, graph_path3 = analyzer.get_plot(plot_path='out/graphs/out_graph', trend_data=trend, predictions_data=prediction_data)
