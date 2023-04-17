@@ -24,7 +24,10 @@ class MessageTranslator:
                 lang = lang[0]
             if lang != 'en':
                 m = messages[i]
-                translated = self.translator.translate(m.text, src=str(lang), dest='en')
+                try:
+                    translated = self.translator.translate(m.text, src=str(lang), dest='en')
+                except Exception:
+                    translated = self.translator.translate(m.text, dest='en')
                 translated_messages[i] = Message(translated.text, m.user, m.timestamp, m.reactions)
         return translated_messages
 
