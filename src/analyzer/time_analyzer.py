@@ -40,18 +40,22 @@ class TimeSeriesAnalyzer:
         return trend.dropna()
 
     @staticmethod
-    def get_predictions(data, end_date='2023-04-14'):
-        data = data.resample('1d')['value'].agg('mean').fillna(0).asfreq('1D')
-        stepwise_fit = pm.auto_arima(data, start_p=0, start_q=0,
-                                     max_p=4, max_q=4, m=1,
-                                     start_P=0, seasonal=False,
-                                     d=0,
-                                     information_criterion='aic',
-                                     stepwise=True)
-        model = ARIMA(data, order=stepwise_fit.order, trend='c')
-        model = model.fit()
-        predictions = model.get_prediction(end=data[-1:].index[0] + pd.Timedelta(days=10), dynamic=False)
-        return predictions, data
+    def get_predictions(data):
+        try:
+            data = data.resample('1d')['value'].agg('mean').fillna(0).asfreq('1D')
+            stepwise_fit = pm.auto_arima(data, start_p=0, start_q=0,
+                                         max_p=4, max_q=4, m=1,
+                                         start_P=0, seasonal=False,
+                                         d=0,
+                                         information_criterion='aic',
+                                         stepwise=True)
+            model = ARIMA(data, order=stepwise_fit.order, trend='c')
+            model = model.fit()
+            predictions = model.get_prediction(end=data[-1:].index[0] + pd.Timedelta(days=10), dynamic=False)
+            return predictions, data
+        except Exception:
+            print('Error while getting predictions')
+            return None, None
 
     @staticmethod
     def parse_date(date_string):

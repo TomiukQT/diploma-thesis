@@ -160,23 +160,26 @@ class Analyzer:
 
         # PREDICTIONS
         fig, ax = plt.subplots(figsize=figsize)
-        plt.ylim(-1, 1)
         if predictions_data is None or len(predictions_data) == 0:
-            pd.Series([-1, 0, 1]).plot(ax=ax)
+            ax.text(0.5, 0.5, "No data", fontsize=20)
+        else:
+            plt.ylim(-1, 1)
+            if predictions_data is None or len(predictions_data) == 0:
+                pd.Series([-1, 0, 1]).plot(ax=ax)
 
-        data_len = len(data)
+            data_len = len(data)
 
-        predictions, original = predictions_data
-        predictions.predicted_mean[data_len-1:].plot(label='predictions', marker='.', ax=ax)
-        ci = predictions.conf_int()
-        ci[data_len-1:].plot(color='grey', ax=ax)
-        original[-2:].plot(label='orig_data', marker='.', ax=ax)
-        plt.legend()
+            predictions, original = predictions_data
+            predictions.predicted_mean[data_len-1:].plot(label='predictions', marker='.', ax=ax)
+            ci = predictions.conf_int()
+            ci[data_len-1:].plot(color='grey', ax=ax)
+            original[-2:].plot(label='orig_data', marker='.', ax=ax)
+            plt.legend()
 
-        ax.set_xlabel("Date")
-        ax.set_ylabel("Prediction")
-        ax.set_title("Prediction")
-        ax.set_ylim(-1, 1)
+            ax.set_xlabel("Date")
+            ax.set_ylabel("Prediction")
+            ax.set_title("Prediction")
+            ax.set_ylim(-1, 1)
 
         plot_path3 = self.__save__plot(plt, plot_path, 3)
         return plot_path1, plot_path2, plot_path3

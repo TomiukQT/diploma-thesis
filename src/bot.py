@@ -65,7 +65,7 @@ def channel_analysis(channel_id: str, args: {}, output_channel=None) -> Response
     date_indexed_data = ts_analyzer.index_dates(sa, [m.date for m in filtered_history])
     trend = ts_analyzer.extract_trend(date_indexed_data) #start_date=ts_analyzer.parse_date('last_week')
     # Predictions
-    prediction_data = ts_analyzer.get_predictions(date_indexed_data)
+    prediction_data, _resampled_data = ts_analyzer.get_predictions(date_indexed_data)
 
     # Print Graph
     graph_path1, graph_path2, graph_path3 = analyzer.get_plot(plot_path='out/graphs/out_graph', trend_data=trend, predictions_data=prediction_data)
@@ -239,6 +239,9 @@ def filter_history(history: [], channel_id: str, date_range=None, user=None) -> 
     :param user: Filter option User
     :return:
     """
+    print(f'Filtering history ({len(history)}) for channel: {channel_id} with date range: {date_range} and user: {user}')
+    if len(history) > 0:
+        print(history[0])
     filtered = [m for m in history if m['user'] != BOT_ID]
     if date_range is not None:
         _from, _to = date_range
