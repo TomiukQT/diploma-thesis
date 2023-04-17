@@ -26,11 +26,9 @@ Available parameters:
 
 **user** = user email, which will be converted to id
 
-**date_from** = date from which the analysis will be performed
+**date_from** = date from which the analysis will be performed, format is DD/MM/YYYY
 
-**date_to** = date to which the analysis will be performed
+**date_to** = date to which the analysis will be performed, format is DD/MM/YYYY
 
-**channel** = channel name, which will be analyzed
+**channel** = channel ID!!!, which will be analyzed, channel id cna be found in url https://app.slack.com/client/workspaceID/channelID
 
-
-<a href="https://slack.com/oauth/v2/authorize?client_id=4812629427190.4804700932247&scope=channels:history,channels:read,chat:write,commands,files:write,users:read.email,users:read&user_scope="><img alt="Add to Slack" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcSet="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x" /></a>
