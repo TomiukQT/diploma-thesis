@@ -242,13 +242,14 @@ def filter_history(history: [], channel_id: str, date_range=None, user=None) -> 
     print(f'Filtering history ({len(history)}) for channel: {channel_id} with date range: {date_range} and user: {user}')
     if len(history) > 0:
         print(history[0])
-    filtered = [m for m in history if m['user'] != BOT_ID]
+    filtered = [m for m in history if m.get('user') is not None and m.get('ts') is not None and m.get('text') is not None]
+    filtered = [m for m in filtered if m.get('user') and m['user'] != BOT_ID]
     if date_range is not None:
         _from, _to = date_range
         if _from is not None and _to is not None:
             filtered = [m for m in filtered if _from <= datetime.fromtimestamp(round(float(m['ts']))) <= _to]
     if user is not None:
-        filtered = [m for m in filtered if m['user'] == user]
+        filtered = [m for m in filtered if m.get('user') and m['user'] == user]
 
 
     threads = []
