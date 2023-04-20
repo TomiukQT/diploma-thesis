@@ -191,7 +191,7 @@ def leaderboard():
     sa = {}
     for user in messages_by_user:
         sa[user] = statistics.mean(analyzer.get_sentiment_analysis(messages_by_user[user]))
-    sa = {k: v for k, v in sorted(sa.items(), key=lambda item: item[1])}
+    sa = {k: v for k, v in sorted(sa.items(), key=lambda item: item[1], reverse=True)}
     # post message to channel with leaderboard but include only top and bottom 3
     if len(sa) <= 6:
         client.chat_postMessage(channel=output_channel, text=f'Leaderboard: {sa}')

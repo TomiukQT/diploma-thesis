@@ -132,9 +132,9 @@ class Analyzer:
         if self.last_results is None:
             print('No predictions done')
             return
-        data = self.last_date_results.resample('D').mean().fillna(0)
+        data = self.last_date_results.resample('D').mean()
         #data = pd.Series(self.last_results)
-        figsize = (5, 3)
+        figsize = (10, 6)
         plt.style.use('seaborn-v0_8-whitegrid')
         # SENTIMENT
         fig, ax = plt.subplots(figsize=figsize)
