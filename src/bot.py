@@ -28,7 +28,7 @@ slack_event_adapter = SlackEventAdapter(SIGNING_SECRET, '/slack/events', app)
 
 client = slack.WebClient(token=TOKEN)
 BOT_ID = client.api_call('auth.test')['user_id']
-analyzer = Analyzer('models', 'final/SVR.sav', 'final/vectorizer.sav')
+analyzer = Analyzer('models', 'final/LogisticRegression.sav', 'final/-tfidf-ngram.sav')
 ts_analyzer = TimeSeriesAnalyzer()
 data_uploader = DataUploader()
 message_translator = MessageTranslator()
