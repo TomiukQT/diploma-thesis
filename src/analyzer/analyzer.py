@@ -69,7 +69,7 @@ class Analyzer:
         texts = [m.text for m in messages]
         reactions = [m.reactions for m in messages]
 
-        data = pd.Series([clean_mentions(t) for t in texts])
+        data = pd.Series([clean_mentions(t) if isinstance(t,str) else '' for t in texts])
         data = self.data_transformer.stemming(data)
         data = self.data_transformer.transform(data)
         if self._is_proba_model():
@@ -202,8 +202,12 @@ class Analyzer:
             print('No predictions done')
             return
         prediction_weight = 1 - reaction_weight
+        if self.last_reactions is None:
+            self.last_reactions = [0] * len(data)
         if self._is_proba_model():
-            normalized_prediction = list(map(lambda x: (x - 0.5) * 2, self.last_prediction[:, 0]))
+            normalized_prediction = list(map(lambda x: (x - 0.5) * 2, data[:, 0]))
         else:
-            normalized_prediction = list(map(lambda x: ((1-x) - 0.5) * 2, self.last_prediction))
+            normalized_prediction = list(map(lambda x: ((1-x) - 0.5) * 2, data))
         return list(map(lambda x, y: x * prediction_weight + y * reaction_weight, normalized_prediction, self.last_reactions))
+
+

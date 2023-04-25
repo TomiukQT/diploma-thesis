@@ -42,11 +42,9 @@ class TimeSeriesAnalyzer:
     @staticmethod
     def get_predictions(data):
         try:
-            data = data.resample('1d')['value'].agg('mean').fillna(0).asfreq('1D')
+            data = data.resample('1d')['value'].agg('mean').fillna(method='bfill').asfreq('1D')
             stepwise_fit = pm.auto_arima(data, start_p=0, start_q=0,
-                                         max_p=4, max_q=4, m=1,
-                                         start_P=0, seasonal=False,
-                                         d=0,
+                                         max_p=4, max_q=4, seasonal=False,d=0,
                                          information_criterion='aic',
                                          stepwise=True)
             model = ARIMA(data, order=stepwise_fit.order, trend='c')
