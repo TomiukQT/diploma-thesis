@@ -23,7 +23,7 @@ class TimeSeriesAnalyzer:
         :return: Trend of time series
         """
 
-        data = data.resample('1d')['value'].agg('mean').fillna(0).asfreq('1D')
+        data = data.resample('1d')['value'].agg('mean').fillna(method='ffill').asfreq('1D')
         # Create a decomposition object with the specified model
         try:
             decomposition = sm.tsa.seasonal_decompose(data, model=model)
