@@ -259,7 +259,7 @@ def filter_history(history: [], channel_id: str, date_range=None, user=None) -> 
     if date_range is not None:
         _from, _to = date_range
         if _from is not None and _to is not None:
-            threads = [m for m in threads if _from <= datetime.fromtimestamp(round(float(m['ts']))) <= _to]
+            threads = [m for m in threads if _from <= datetime.fromtimestamp(round(float(m.timestamp))) <= _to]
     normal_messages = [Message(msg['text'], msg['user'], msg['ts'], get_reactions(msg, channel_id)) for msg in filtered]
 
     return normal_messages + threads
